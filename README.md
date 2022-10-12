@@ -13,11 +13,11 @@ fastexcel是基于 ([Apache POI](https://poi.apache.org/))工具组件。 它指
 
 ```java
 public class ExcelWriteTest {
-	/**
-     * 这里还支持原生格式化、列宽、表头样式、表头批注、数据列验证等等
-     * 更多写的功能待文档完善，或加群咨询
-     * https://blog.csdn.net/yyf314922957/article/details/111034523
-	 */
+    /**
+      *  这里还支持嵌套对象、原生格式化、列宽、表头样式、表头批注、数据列验证等等
+      *  更多写的功能待文档完善，或加群咨询
+      *  https://blog.csdn.net/yyf314922957/article/details/111034523
+     */
 	@Test
 	public void write() {
 		Workbook workbook = new WorkbookBuilder(new SXSSFWorkbook())
@@ -82,14 +82,17 @@ public class ExcelWriteTest {
 ```java
 public class ExcelReadTest {
 	
-	/**
-     * 这里只描述了如何读数据，很多时候我们读取数据发生错误时，如数据格式错误，需要将错误信息返回给用户
-     * 这里提供了一种非常友好，使用也很简单的方式。就是将错误信息以批注的方式写回导入的excel，同时也支持根据业务传入自定义的错误
-	 */
+    /**
+     * 这里只描述了如何读数据，很多时候我们读取数据发生错误时，
+     * 如数据格式错误，需要将错误信息返回给用户
+     * 这里提供了一种非常友好，使用也很简单的方式。
+     * 就是将错误信息以批注的方式写回导入的excel，同时也支持根据业务传入自定义的错误
+     */
 	@Test
 	public void read() {
 		// 创建行映射器
-		AnnotationBasedRowSetMapper<RowModel> rowSetMapper = new AnnotationBasedRowSetMapper<>(RowModel.class);
+		AnnotationBasedRowSetMapper<RowModel> rowSetMapper
+            = new AnnotationBasedRowSetMapper<>(RowModel.class);
 		// 读取excel文件
 		RowSetReader rowSetReader = RowSetReader.open(file.getInputStream());
 		// 获取excel行数据
