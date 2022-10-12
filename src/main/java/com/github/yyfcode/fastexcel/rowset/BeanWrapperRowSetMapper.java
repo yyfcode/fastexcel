@@ -128,7 +128,7 @@ public class BeanWrapperRowSetMapper<T> implements RowSetMapper<T> {
 	static class DefaultMessageSource extends ResourceBundleMessageSource {
 
 		public DefaultMessageSource() {
-			setBasename("com.platform.excel.messages");
+			setBasename("com.github.yyfcode.fastexcel.messages");
 		}
 
 		public static MessageSourceAccessor getAccessor() {
