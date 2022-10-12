@@ -92,7 +92,7 @@ public class ExcelReadTest {
 	public void read() {
 		// 创建行映射器
 		AnnotationBasedRowSetMapper<RowModel> rowSetMapper
-            = new AnnotationBasedRowSetMapper<>(RowModel.class);
+                    = new AnnotationBasedRowSetMapper<>(RowModel.class);
 		// 读取excel文件
 		RowSetReader rowSetReader = RowSetReader.open(file.getInputStream());
 		// 获取excel行数据
@@ -115,7 +115,7 @@ public class ExcelReadTest {
 ```xml
 
 <dependency>
-    <groupId>com.github.yyfcode</groupId>
+    <groupId>io.github.yyfcode</groupId>
     <artifactId>fastexcel</artifactId>
     <version>1.0.0</version>
 </dependency>
