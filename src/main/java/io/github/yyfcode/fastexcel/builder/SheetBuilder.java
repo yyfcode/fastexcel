@@ -149,11 +149,11 @@ public class SheetBuilder extends CellBuilderHelper<SheetBuilder> {
 	/**
 	 * 创建多行
 	 */
-	public SheetBuilder createRows(Collection<? extends Row> rows) {
-		for (Row row : rows) {
+	public SheetBuilder createRows(Collection<? extends io.github.yyfcode.fastexcel.model.Row> rows) {
+		for (io.github.yyfcode.fastexcel.model.Row row : rows) {
 			createRow(row.getCellValues());
 			if (CollectionUtils.isNotEmpty(row.getComments())) {
-				for (Comment comment : row.getComments()) {
+				for (io.github.yyfcode.fastexcel.model.Comment comment : row.getComments()) {
 					createCellComment(comment.getText(),
 						comment.getAuthor(),
 						lastRow,
