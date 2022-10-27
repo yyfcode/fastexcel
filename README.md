@@ -6,7 +6,7 @@ A Java library for reading and writing big excel files quickly and easily.
 In this file you can find some simple examples.
 You can also take a look on a working Spring Boot app that uses this library: [https://github.com/yyfcode/fastexcel-demo](https://github.com/yyfcode/fastexcel-demo)
 
-See the [中文文档](https://github.com/yyfcode/fastexcel/blob/main/README-zh.md)  for Chinese readme.
+See the [中文文档](https://github.com/yyfcode/fastexcel/blob/master/README-zh.md)  for Chinese readme.
 
 ## Examples
 
