@@ -47,10 +47,6 @@ public class RowBuilder<T> {
 
 	private int thisRow;
 
-	private int lastCol = -1;
-
-	private int lastRow;
-
 	public RowBuilder(SheetBuilder parent, Class<T> type) {
 		Validate.notNull(type, "Type must not be null");
 		this.parent = parent;
@@ -67,7 +63,7 @@ public class RowBuilder<T> {
 		int firstCol = header.getFirstCol();
 		int lastCol = header.getLastCol();
 		// 表头样式
-		int defaultWidth = parent.getSheet().getDefaultColumnWidth();
+		int defaultWidth = parent.sheet.getDefaultColumnWidth();
 		int width = header.getWidth() == 8 ? defaultWidth : header.getWidth();
 		parent.setColumnWidth(firstCol, width)
 			.matchingColumn(firstCol)
@@ -85,7 +81,7 @@ public class RowBuilder<T> {
 		// 数据验证
 		if (header.hasValidation()) {
 			parent.addValidationData(
-				new CellRangeAddressList(firstRow, parent.getMaxRows() - firstRow - 1, lastCol, lastCol),
+				new CellRangeAddressList(firstRow, parent.maxRows - firstRow - 1, lastCol, lastCol),
 				header.getValidationType(),
 				header.getOperatorType(),
 				header.getFirstFormula(),
@@ -116,7 +112,7 @@ public class RowBuilder<T> {
 				createHeader(child);
 			}
 		} else {
-			lastRow = this.lastRow;
+			lastRow = parent.lastRow;
 		}
 		// 合并表头样式
 		parent.addCellRange(firstRow, lastRow, firstCol, lastCol)
@@ -127,8 +123,8 @@ public class RowBuilder<T> {
 
 	public RowBuilder<T> createRow(T bean) {
 		Validate.notNull(bean, "bean must be not null");
-		thisRow = lastRow + 1;
-		lastRow = thisRow;
+		thisRow = parent.lastRow + 1;
+		parent.lastRow = thisRow;
 		List<Cell> cells = createCells(bean);
 		for (Cell cell : cells) {
 			int firstRow = cell.getFirstRow();
@@ -140,8 +136,8 @@ public class RowBuilder<T> {
 				.merge();
 		}
 		// 补全空白边框
-		if (lastCol > -1) {
-			parent.addCellRange(thisRow, lastRow, 0, lastCol);
+		if (parent.lastCol > -1) {
+			parent.addCellRange(thisRow, parent.lastRow, 0, parent.lastCol);
 		}
 		return this;
 	}
@@ -151,6 +147,7 @@ public class RowBuilder<T> {
 	 */
 	public RowBuilder<T> createRow(Object[] cells) {
 		parent.createRow(cells);
+		thisRow = parent.lastRow;
 		return this;
 	}
 
@@ -159,11 +156,12 @@ public class RowBuilder<T> {
 	 */
 	public RowBuilder<T> createRows(Object[][] rows) {
 		parent.createRows(rows);
+		thisRow = parent.lastRow;
 		return this;
 	}
 
 	/**
-	 * 创建批注
+	 * 当前行指定列创建批注
 	 */
 	public RowBuilder<T> createCellComment(String comment, String author, int col1, int row2, int col2) {
 		parent.createCellComment(comment, author, thisRow, col1, row2, col2);
@@ -190,7 +188,7 @@ public class RowBuilder<T> {
 			// 只保留指定属性，包含子属性
 			properties.removeIf(property -> !matchesProperty(Arrays.asList(names), property));
 		}
-		this.thisRow = parent.getLastRow() + 1;
+		this.thisRow = parent.lastRow + 1;
 		List<Column> headers = createHeader(null, type);
 		for (Column header : headers) {
 			createHeader(header);
@@ -216,11 +214,11 @@ public class RowBuilder<T> {
 	/**
 	 * 创建表头
 	 */
-	protected List<Column> createHeader(Column parent, Class<?> type) {
+	protected List<Column> createHeader(Column column, Class<?> type) {
 		List<Column> headers = new ArrayList<>();
 		for (Field field : getSortedFields(type)) {
 			Class<?> fieldType = field.getType();
-			String property = parent == null ? field.getName() : parent.getName() + "." + field.getName();
+			String property = column == null ? field.getName() : column.getName() + "." + field.getName();
 			if (!matchesProperty(properties, property)) {
 				continue;
 			}
@@ -228,9 +226,9 @@ public class RowBuilder<T> {
 			// 根据嵌套属性中的点来获取开始行位置，每次递归都会创建一行
 			header.setFirstRow(StringUtils.countMatches(property, ".") + thisRow);
 			// 更新表头最后一行的位置，用于表头合并
-			lastRow = Math.max(header.getFirstRow(), lastRow);
+			parent.lastRow = Math.max(header.getFirstRow(), parent.lastRow);
 			// 更新表头列的位置，每个属性对应一列
-			header.setFirstCol(lastCol + 1);
+			header.setFirstCol(parent.lastCol + 1);
 			// 如果存在嵌套属性，根据嵌套属性创建子表头
 			if (!BeanUtils.isSimpleProperty(fieldType)) {
 				if (fieldType.isArray()) {
@@ -242,11 +240,11 @@ public class RowBuilder<T> {
 				}
 			}
 			if (CollectionUtils.isEmpty(header.getChildren())) {
-				lastCol++;
+				parent.lastCol++;
 			} else {
 				properties.remove(property);
 			}
-			header.setLastCol(lastCol);
+			header.setLastCol(parent.lastCol);
 			headers.add(header);
 		}
 		return headers;
@@ -277,7 +275,7 @@ public class RowBuilder<T> {
 			}
 			long lastRow = firstRow + rowSpans;
 			propertyPathRowSpans.put(propertyPath, new RowSpan((int) firstRow, (int) lastRow));
-			this.lastRow = Math.max(this.lastRow, (int) lastRow + thisRow);
+			parent.lastRow = Math.max(parent.lastRow, (int) lastRow + thisRow);
 		}
 
 		// 设置单元格行距
@@ -288,7 +286,7 @@ public class RowBuilder<T> {
 				cell.setLastRow(propertyPathRowSpans.get(propertyPath).getLastRow() + thisRow);
 			} else {
 				cell.setFirstRow(thisRow);
-				cell.setLastRow(lastRow);
+				cell.setLastRow(parent.lastRow);
 			}
 		}
 		return cells;

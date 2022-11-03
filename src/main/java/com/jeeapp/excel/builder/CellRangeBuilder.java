@@ -109,6 +109,15 @@ public class CellRangeBuilder {
 		return this;
 	}
 
+	public CellRangeBuilder setPictureData(byte[] pictureData) {
+		parent.createPicture(pictureData,
+			region.getFirstRow(),
+			region.getFirstColumn(),
+			region.getLastRow() + 1,
+			region.getLastColumn() + 1);
+		return this;
+	}
+
 	public CellRangeBuilder addCellRange(int firstRow, int lastRow, int firstCol, int lastCol) {
 		this.merge();
 		return parent.addCellRange(firstRow, lastRow, firstCol, lastCol);

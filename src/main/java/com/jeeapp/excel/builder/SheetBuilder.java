@@ -34,7 +34,7 @@ public class SheetBuilder extends CellBuilderHelper<SheetBuilder> {
 
 	private final WorkbookBuilder parent;
 
-	private final Sheet sheet;
+	protected final Sheet sheet;
 
 	private final Drawing<?> drawing;
 
@@ -42,11 +42,11 @@ public class SheetBuilder extends CellBuilderHelper<SheetBuilder> {
 
 	private final DataValidationHelper dataValidationHelper;
 
-	private final int maxRows;
+	protected final int maxRows;
 
-	private int lastRow = -1;
+	protected int lastRow = -1;
 
-	private int lastCol = -1;
+	protected int lastCol = -1;
 
 	public SheetBuilder(WorkbookBuilder parent, Sheet sheet) {
 		super(parent);
@@ -170,34 +170,50 @@ public class SheetBuilder extends CellBuilderHelper<SheetBuilder> {
 	}
 
 	/**
-	 * 创建单元格(支持公式)
+	 * 创建单元格
 	 */
-	public SheetBuilder createCell(Object value) {
+	private Cell createCell() {
 		lastRow = lastRow == -1 ? 0 : lastRow;
 		Row row = sheet.getRow(lastRow);
 		if (row == null) {
 			row = sheet.createRow(lastRow);
+			initRow(row);
 		}
 		lastCol = lastCol == -1 ? 0 : lastCol + 1;
-		Cell cell = row.createCell(lastCol);
+		return row.createCell(lastCol);
+	}
+
+	/**
+	 * 创建有值的单元格(支持公式)
+	 */
+	public SheetBuilder createCell(Object value) {
+		Cell cell = createCell();
 		CellUtils.setCellValue(cell, value);
 		super.setCellStyle(cell);
 		return this;
 	}
 
 	/**
-	 * 指定位置创建单元格
+	 * 指定位置创建无值单元格
 	 */
-	public SheetBuilder createCell(int row1, int col1, Object value) {
+	private Cell createCell(int row1, int col1) {
 		Row row = sheet.getRow(row1);
 		if (row == null) {
 			row = sheet.createRow(row1);
+			initRow(row);
 		}
-		initRow(row);
 		Cell cell = row.getCell(col1);
 		if (cell == null) {
 			cell = row.createCell(col1);
 		}
+		return cell;
+	}
+
+	/**
+	 * 指定位置创建有值单元格
+	 */
+	public SheetBuilder createCell(int row1, int col1, Object value) {
+		Cell cell = createCell(row1, col1);
 		if (value != null) {
 			CellUtils.setCellValue(cell, value);
 		}
@@ -206,23 +222,30 @@ public class SheetBuilder extends CellBuilderHelper<SheetBuilder> {
 	}
 
 	/**
-	 * 指定位置添加批注
+	 * 指定单元格添加批注
 	 */
 	public SheetBuilder createCellComment(String comment, String author, int row1, int col1, int row2, int col2) {
-		Row row = sheet.getRow(row1);
-		if (row == null) {
-			row = sheet.createRow(row1);
-		}
-		Cell cell = row.getCell(col1);
-		if (cell == null) {
-			cell = row.createCell(col1);
-		}
+		Cell cell = createCell(row1, col1);
 		ClientAnchor clientAnchor = creationHelper.createClientAnchor();
 		clientAnchor.setCol1(col1);
 		clientAnchor.setCol2(col1 + col2);
 		clientAnchor.setRow1(row1);
 		clientAnchor.setRow2(row1 + row2);
-		clientAnchor.setAnchorType(AnchorType.DONT_MOVE_AND_RESIZE);
+		clientAnchor.setAnchorType(AnchorType.MOVE_DONT_RESIZE);
+		Comment cellComment = drawing.createCellComment(clientAnchor);
+		cellComment.setString(creationHelper.createRichTextString(comment));
+		cellComment.setAuthor(author);
+		cell.setCellComment(cellComment);
+		return this;
+	}
+
+	/**
+	 * 指定单元格添加批注
+	 */
+	public SheetBuilder createCellComment(String comment, String author, ClientAnchor clientAnchor) {
+		int row1 = clientAnchor.getRow1();
+		short col1 = clientAnchor.getCol1();
+		Cell cell = createCell(row1, col1);
 		Comment cellComment = drawing.createCellComment(clientAnchor);
 		cellComment.setString(creationHelper.createRichTextString(comment));
 		cellComment.setAuthor(author);
@@ -234,26 +257,46 @@ public class SheetBuilder extends CellBuilderHelper<SheetBuilder> {
 	 * 当前单元格添加批注
 	 */
 	public SheetBuilder createCellComment(String comment, String author, int row2, int col2) {
-		lastRow = lastRow == -1 ? 0 : lastRow;
-		Row row = sheet.getRow(lastRow);
-		if (row == null) {
-			row = sheet.createRow(lastRow);
-		}
-		lastCol = lastCol == -1 ? 0 : lastCol;
-		Cell cell = row.getCell(lastCol);
-		if (cell == null) {
-			cell = row.createCell(lastCol);
-		}
+		Cell cell = createCell();
 		ClientAnchor clientAnchor = creationHelper.createClientAnchor();
 		clientAnchor.setCol1(cell.getColumnIndex());
 		clientAnchor.setCol2(cell.getColumnIndex() + row2);
 		clientAnchor.setRow1(cell.getRowIndex());
 		clientAnchor.setRow2(cell.getRowIndex() + col2);
-		clientAnchor.setAnchorType(AnchorType.DONT_MOVE_AND_RESIZE);
+		clientAnchor.setAnchorType(AnchorType.MOVE_DONT_RESIZE);
 		Comment cellComment = drawing.createCellComment(clientAnchor);
 		cellComment.setString(creationHelper.createRichTextString(comment));
 		cellComment.setAuthor(author);
 		cell.setCellComment(cellComment);
+		return this;
+	}
+
+	/**
+	 * 指定单元格添加图片
+	 */
+	public SheetBuilder createPicture(byte[] pictureData, int row1, int col1, int row2, int col2) {
+		int pictureIndex = sheet.getWorkbook().addPicture(pictureData, Workbook.PICTURE_TYPE_JPEG);
+		ClientAnchor clientAnchor = creationHelper.createClientAnchor();
+		clientAnchor.setCol1(col1);
+		clientAnchor.setCol2(col1 + col2);
+		clientAnchor.setRow1(row1);
+		clientAnchor.setRow2(row1 + row2);
+		drawing.createPicture(clientAnchor, pictureIndex);
+		return this;
+	}
+
+	/**
+	 * 当前单元格添加图片
+	 */
+	public SheetBuilder createPicture(byte[] pictureData, int row2, int col2) {
+		Cell cell = createCell();
+		int pictureIndex = sheet.getWorkbook().addPicture(pictureData, Workbook.PICTURE_TYPE_JPEG);
+		ClientAnchor clientAnchor = creationHelper.createClientAnchor();
+		clientAnchor.setCol1(cell.getColumnIndex());
+		clientAnchor.setCol2(cell.getColumnIndex() + col2);
+		clientAnchor.setRow1(cell.getRowIndex());
+		clientAnchor.setRow2(cell.getRowIndex() + row2);
+		drawing.createPicture(clientAnchor, pictureIndex);
 		return this;
 	}
 
@@ -389,20 +432,5 @@ public class SheetBuilder extends CellBuilderHelper<SheetBuilder> {
 	 */
 	public Workbook build() {
 		return parent.build();
-	}
-
-	/**
-	 * 获取最后一行
-	 */
-	protected int getLastRow() {
-		return lastRow;
-	}
-
-	protected int getMaxRows() {
-		return this.maxRows;
-	}
-
-	protected Sheet getSheet() {
-		return sheet;
 	}
 }
