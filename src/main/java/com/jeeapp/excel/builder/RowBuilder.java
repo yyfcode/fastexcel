@@ -21,7 +21,6 @@ import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.apache.poi.ss.util.CellRangeAddressList;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.PropertyAccessorFactory;
@@ -80,21 +79,18 @@ public class RowBuilder<T> {
 
 		// 数据验证
 		if (header.hasValidation()) {
-			parent.addValidationData(
-				new CellRangeAddressList(firstRow, parent.maxRows - firstRow - 1, lastCol, lastCol),
-				header.getValidationType(),
-				header.getOperatorType(),
-				header.getFirstFormula(),
-				header.getSecondFormula(),
-				header.getExplicitListValues(),
-				header.isAllowEmpty(),
-				header.getErrorStyle(),
-				header.isShowPromptBox(),
-				header.getPromptBoxTitle(),
-				header.getPromptBoxText(),
-				header.isShowErrorBox(),
-				header.getErrorBoxTitle(),
-				header.getErrorBoxText());
+			parent.createValidation(firstRow, parent.maxRows - firstRow - 1, lastCol, lastCol)
+				.createConstraint(header.getValidationType(),
+					header.getOperatorType(),
+					header.getFirstFormula(),
+					header.getSecondFormula(),
+					header.getExplicitListValues(),
+					header.getDateFormat())
+				.allowedEmptyCell(header.isAllowEmpty())
+				.setErrorStyle(header.getErrorStyle())
+				.showErrorBox(header.isShowErrorBox(), header.getErrorBoxTitle(), header.getErrorBoxText())
+				.showPromptBox(header.isShowPromptBox(), header.getPromptBoxTitle(), header.getPromptBoxText())
+				.addValidationData();
 		}
 
 		// 表头标注

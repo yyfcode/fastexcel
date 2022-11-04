@@ -58,6 +58,8 @@ public class Column extends Cell {
 
 	private boolean allowEmpty;
 
+	private String dateFormat;
+
 	private int errorStyle;
 
 	private boolean showPromptBox;
@@ -119,6 +121,7 @@ public class Column extends Cell {
 		column.setFirstFormula(validation.firstFormula());
 		column.setSecondFormula(validation.secondFormula());
 		column.setExplicitListValues(validation.explicitListValues());
+		column.setDateFormat(validation.dateFormat());
 		column.setAllowEmpty(validation.allowEmpty());
 		column.setErrorStyle(validation.errorStyle());
 		column.setShowPromptBox(validation.showPromptBox());

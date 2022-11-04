@@ -1,22 +1,15 @@
 package com.jeeapp.excel.builder;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.ss.usermodel.ClientAnchor.AnchorType;
 import org.apache.poi.ss.usermodel.Comment;
 import org.apache.poi.ss.usermodel.CreationHelper;
-import org.apache.poi.ss.usermodel.DataValidation;
-import org.apache.poi.ss.usermodel.DataValidationConstraint;
-import org.apache.poi.ss.usermodel.DataValidationConstraint.OperatorType;
-import org.apache.poi.ss.usermodel.DataValidationConstraint.ValidationType;
-import org.apache.poi.ss.usermodel.DataValidationHelper;
 import org.apache.poi.ss.usermodel.Drawing;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -40,8 +33,6 @@ public class SheetBuilder extends CellBuilderHelper<SheetBuilder> {
 
 	private final CreationHelper creationHelper;
 
-	private final DataValidationHelper dataValidationHelper;
-
 	protected final int maxRows;
 
 	protected int lastRow = -1;
@@ -54,7 +45,6 @@ public class SheetBuilder extends CellBuilderHelper<SheetBuilder> {
 		this.sheet = sheet;
 		this.drawing = sheet.createDrawingPatriarch();
 		this.creationHelper = sheet.getWorkbook().getCreationHelper();
-		this.dataValidationHelper = sheet.getDataValidationHelper();
 		this.maxRows = sheet.getWorkbook().getSpreadsheetVersion().getMaxRows();
 		super.initSheet(sheet);
 	}
@@ -104,6 +94,13 @@ public class SheetBuilder extends CellBuilderHelper<SheetBuilder> {
 		this.lastRow = Math.max(lastRow, this.lastRow);
 		this.lastCol = Math.max(lastCol, this.lastCol);
 		return new CellRangeBuilder(this, sheet, new CellRangeAddress(firstRow, lastRow, firstCol, lastCol));
+	}
+
+	/**
+	 * 添加数据验证
+	 */
+	public DataValidationBuilder createValidation(int firstRow, int lastRow, int firstCol, int lastCol) {
+		return new DataValidationBuilder(this, sheet, new CellRangeAddressList(firstRow, lastRow, firstCol, lastCol));
 	}
 
 	/**
@@ -196,15 +193,15 @@ public class SheetBuilder extends CellBuilderHelper<SheetBuilder> {
 	/**
 	 * 指定位置创建无值单元格
 	 */
-	private Cell createCell(int row1, int col1) {
-		Row row = sheet.getRow(row1);
+	private Cell createCell(int rowNum, int colNum) {
+		Row row = sheet.getRow(rowNum);
 		if (row == null) {
-			row = sheet.createRow(row1);
+			row = sheet.createRow(rowNum);
 			initRow(row);
 		}
-		Cell cell = row.getCell(col1);
+		Cell cell = row.getCell(colNum);
 		if (cell == null) {
-			cell = row.createCell(col1);
+			cell = row.createCell(colNum);
 		}
 		return cell;
 	}
@@ -212,8 +209,8 @@ public class SheetBuilder extends CellBuilderHelper<SheetBuilder> {
 	/**
 	 * 指定位置创建有值单元格
 	 */
-	public SheetBuilder createCell(int row1, int col1, Object value) {
-		Cell cell = createCell(row1, col1);
+	public SheetBuilder createCell(int rowNum, int colNum, Object value) {
+		Cell cell = createCell(rowNum, colNum);
 		if (value != null) {
 			CellUtils.setCellValue(cell, value);
 		}
@@ -274,8 +271,8 @@ public class SheetBuilder extends CellBuilderHelper<SheetBuilder> {
 	/**
 	 * 指定单元格添加图片
 	 */
-	public SheetBuilder createPicture(byte[] pictureData, int row1, int col1, int row2, int col2) {
-		int pictureIndex = sheet.getWorkbook().addPicture(pictureData, Workbook.PICTURE_TYPE_JPEG);
+	public SheetBuilder createPicture(byte[] pictureData, int format, int row1, int col1, int row2, int col2) {
+		int pictureIndex = sheet.getWorkbook().addPicture(pictureData, format);
 		ClientAnchor clientAnchor = creationHelper.createClientAnchor();
 		clientAnchor.setCol1(col1);
 		clientAnchor.setCol2(col1 + col2);
@@ -288,9 +285,9 @@ public class SheetBuilder extends CellBuilderHelper<SheetBuilder> {
 	/**
 	 * 当前单元格添加图片
 	 */
-	public SheetBuilder createPicture(byte[] pictureData, int row2, int col2) {
+	public SheetBuilder createPicture(byte[] pictureData, int format, int row2, int col2) {
 		Cell cell = createCell();
-		int pictureIndex = sheet.getWorkbook().addPicture(pictureData, Workbook.PICTURE_TYPE_JPEG);
+		int pictureIndex = sheet.getWorkbook().addPicture(pictureData, format);
 		ClientAnchor clientAnchor = creationHelper.createClientAnchor();
 		clientAnchor.setCol1(cell.getColumnIndex());
 		clientAnchor.setCol2(cell.getColumnIndex() + col2);
@@ -298,112 +295,6 @@ public class SheetBuilder extends CellBuilderHelper<SheetBuilder> {
 		clientAnchor.setRow2(cell.getRowIndex() + row2);
 		drawing.createPicture(clientAnchor, pictureIndex);
 		return this;
-	}
-
-	/**
-	 * 给列添加数据验证
-	 */
-	protected SheetBuilder addValidationData(CellRangeAddressList cellRangeAddressList,
-		int validationType, int operatorType, String firstFormula, String secondFormula, String[] explicitListValues,
-		boolean allowEmpty, int errorStyle, boolean showPromptBox, String promptBoxTitle, String promptBoxText,
-		boolean showErrorBox, String errorBoxTitle, String errorBoxText) {
-		DataValidationConstraint constraint = null;
-		if (validationType == ValidationType.LIST) {
-			if (explicitListValues != null) {
-				constraint = dataValidationHelper.createExplicitListConstraint(explicitListValues);
-			} else {
-				constraint = dataValidationHelper.createFormulaListConstraint(firstFormula);
-			}
-		}
-		if (validationType == ValidationType.TIME) {
-			constraint = dataValidationHelper.createTimeConstraint(operatorType, firstFormula, secondFormula);
-		}
-		if (validationType == ValidationType.DATE) {
-			constraint = dataValidationHelper.createDateConstraint(operatorType, firstFormula, secondFormula, null);
-		}
-		if (validationType == ValidationType.FORMULA) {
-			constraint = dataValidationHelper.createCustomConstraint(firstFormula);
-		}
-		if (validationType == ValidationType.INTEGER) {
-			constraint = dataValidationHelper.createIntegerConstraint(operatorType, firstFormula, secondFormula);
-		}
-		if (validationType == ValidationType.DECIMAL) {
-			constraint = dataValidationHelper.createDecimalConstraint(operatorType, firstFormula, secondFormula);
-		}
-		if (validationType == ValidationType.TEXT_LENGTH) {
-			constraint = dataValidationHelper.createTextLengthConstraint(operatorType, firstFormula, secondFormula);
-		}
-		if (constraint != null) {
-			DataValidation validation = dataValidationHelper.createValidation(constraint, cellRangeAddressList);
-			validation.setEmptyCellAllowed(allowEmpty);
-			validation.setErrorStyle(errorStyle);
-			if (showErrorBox) {
-				validation.setShowErrorBox(true);
-				if (StringUtils.isBlank(errorBoxText)) {
-					errorBoxText = createDefaultErrorBoxText(validationType, operatorType, firstFormula,
-						secondFormula, explicitListValues);
-				}
-				validation.createErrorBox(errorBoxTitle, errorBoxText);
-			}
-			if (showPromptBox) {
-				validation.setShowPromptBox(true);
-				validation.createPromptBox(promptBoxTitle, promptBoxText);
-			}
-			sheet.addValidationData(validation);
-		}
-		return this;
-	}
-
-	/**
-	 * 默认的错误提示
-	 */
-	protected String createDefaultErrorBoxText(int validationType, int operatorType, String firstFormula,
-		String secondFormula, String[] explicitListValues) {
-		String type = "";
-		if (validationType == ValidationType.LIST) {
-			if (explicitListValues != null) {
-				return String.format("必须是%s其中之一", Arrays.toString(explicitListValues));
-			} else {
-				return String.format("数据有误，验证规则：%s!", firstFormula);
-			}
-		}
-		if (validationType == ValidationType.TIME) {
-			type = "时间";
-		}
-		if (validationType == ValidationType.DATE) {
-			type = "日期";
-		}
-		if (validationType == ValidationType.FORMULA) {
-			return String.format("数据有误，验证规则：%s!", firstFormula);
-		}
-		if (validationType == ValidationType.TEXT_LENGTH) {
-			type = "长度";
-		}
-		if (operatorType == OperatorType.BETWEEN) {
-			return String.format("%s必须在%s和%s之间!", type, firstFormula, secondFormula);
-		}
-		if (operatorType == OperatorType.NOT_BETWEEN) {
-			return String.format("%s不能在%s和%s之间!", type, firstFormula, secondFormula);
-		}
-		if (operatorType == OperatorType.EQUAL) {
-			return String.format("%s必须等于%s!", type, firstFormula);
-		}
-		if (operatorType == OperatorType.NOT_EQUAL) {
-			return String.format("%s不能等于%s!", type, firstFormula);
-		}
-		if (operatorType == OperatorType.GREATER_THAN) {
-			return String.format("%s必须大于%s!", type, firstFormula);
-		}
-		if (operatorType == OperatorType.LESS_THAN) {
-			return String.format("%s必须小于%s!", type, firstFormula);
-		}
-		if (operatorType == OperatorType.GREATER_OR_EQUAL) {
-			return String.format("%s必须大于或等于%s!", type, firstFormula);
-		}
-		if (operatorType == OperatorType.LESS_OR_EQUAL) {
-			return String.format("%s必须小于或等于%s!", type, firstFormula);
-		}
-		return "数据验证不通过!";
 	}
 
 	/**

@@ -165,6 +165,11 @@ public @interface ExcelProperty {
 		String[] explicitListValues() default {};
 
 		/**
+		 * 日期格式
+		 */
+		String dateFormat() default "";
+
+		/**
 		 * 错误样式
 		 * @see ErrorStyle
 		 */
@@ -188,7 +193,7 @@ public @interface ExcelProperty {
 		/**
 		 * 显示填写提示
 		 */
-		boolean showPromptBox() default false;
+		boolean showPromptBox() default true;
 
 		/**
 		 * 填写提示标题

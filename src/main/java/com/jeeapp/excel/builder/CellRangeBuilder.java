@@ -109,8 +109,9 @@ public class CellRangeBuilder {
 		return this;
 	}
 
-	public CellRangeBuilder setPictureData(byte[] pictureData) {
+	public CellRangeBuilder setPictureData(byte[] pictureData, int format) {
 		parent.createPicture(pictureData,
+			format,
 			region.getFirstRow(),
 			region.getFirstColumn(),
 			region.getLastRow() + 1,
