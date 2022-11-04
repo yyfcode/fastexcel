@@ -103,10 +103,10 @@ public class DataValidationBuilder {
 		return this;
 	}
 
-	public DataValidationBuilder createFormulaListConstraint(String[] explicitListValues) {
+	public DataValidationBuilder createFormulaListConstraint(String firstFormula) {
 		this.validationType = ValidationType.LIST;
-		this.explicitListValues = explicitListValues;
-		constraint = dataValidationHelper.createExplicitListConstraint(explicitListValues);
+		this.firstFormula = firstFormula;
+		constraint = dataValidationHelper.createFormulaListConstraint(firstFormula);
 		return this;
 	}
 
