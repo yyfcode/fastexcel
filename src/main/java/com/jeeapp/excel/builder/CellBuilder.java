@@ -15,24 +15,25 @@ import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellAddress;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import com.jeeapp.excel.util.CellUtils;
 
 /**
  * @author justice
  */
-public abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
+abstract class CellBuilder<B extends CellBuilder<B>> {
 
 	private final CommonProperties properties;
 
 	private final Workbook workbook;
 
-	public CellBuilderHelper(Workbook workbook) {
+	public CellBuilder(Workbook workbook) {
 		this.workbook = workbook;
 		this.properties = new CommonProperties();
 	}
 
-	protected CellBuilderHelper(CellBuilderHelper<?> parent) {
+	protected CellBuilder(CellBuilder<?> parent) {
 		this.workbook = parent.workbook;
 		this.properties = new CommonProperties(parent.properties);
 	}
@@ -147,6 +148,7 @@ public abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 	 * init sheet
 	 */
 	protected void initSheet(Sheet sheet) {
+		sheet.setActiveCell(new CellAddress(0, 0));
 		if (!properties.autoSizeColumns.isEmpty() && sheet instanceof SXSSFSheet) {
 			((SXSSFSheet) sheet).trackAllColumnsForAutoSizing();
 		}

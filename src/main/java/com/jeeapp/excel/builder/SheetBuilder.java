@@ -6,16 +6,13 @@ import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.ClientAnchor;
-import org.apache.poi.ss.usermodel.ClientAnchor.AnchorType;
-import org.apache.poi.ss.usermodel.Comment;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Drawing;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellAddress;
 import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import com.jeeapp.excel.util.CellUtils;
 
@@ -23,15 +20,15 @@ import com.jeeapp.excel.util.CellUtils;
  * @author justice
  */
 @Slf4j
-public class SheetBuilder extends CellBuilderHelper<SheetBuilder> {
+public class SheetBuilder extends CellBuilder<SheetBuilder> {
 
 	private final WorkbookBuilder parent;
 
 	protected final Sheet sheet;
 
-	private final Drawing<?> drawing;
+	protected final Drawing<?> drawing;
 
-	private final CreationHelper creationHelper;
+	protected final CreationHelper creationHelper;
 
 	protected final int maxRows;
 
@@ -85,22 +82,6 @@ public class SheetBuilder extends CellBuilderHelper<SheetBuilder> {
 	protected void addColumnStyle(int column, Map<String, Object> properties) {
 		super.addColumnStyle(column, properties);
 		setColumnStyle(sheet, column);
-	}
-
-	/**
-	 * 添加合并区域
-	 */
-	public CellRangeBuilder addCellRange(int firstRow, int lastRow, int firstCol, int lastCol) {
-		this.lastRow = Math.max(lastRow, this.lastRow);
-		this.lastCol = Math.max(lastCol, this.lastCol);
-		return new CellRangeBuilder(this, sheet, new CellRangeAddress(firstRow, lastRow, firstCol, lastCol));
-	}
-
-	/**
-	 * 添加数据验证
-	 */
-	public DataValidationBuilder createValidation(int firstRow, int lastRow, int firstCol, int lastCol) {
-		return new DataValidationBuilder(this, sheet, new CellRangeAddressList(firstRow, lastRow, firstCol, lastCol));
 	}
 
 	/**
@@ -176,8 +157,10 @@ public class SheetBuilder extends CellBuilderHelper<SheetBuilder> {
 			row = sheet.createRow(lastRow);
 			initRow(row);
 		}
-		lastCol = lastCol == -1 ? 0 : lastCol + 1;
-		return row.createCell(lastCol);
+		lastCol = lastCol + 1;
+		Cell cell = row.createCell(lastCol);
+		sheet.setActiveCell(new CellAddress(cell));
+		return cell;
 	}
 
 	/**
@@ -193,108 +176,100 @@ public class SheetBuilder extends CellBuilderHelper<SheetBuilder> {
 	/**
 	 * 指定位置创建无值单元格
 	 */
-	private Cell createCell(int rowNum, int colNum) {
+	private Cell createCell(int rowNum, int cellNum) {
 		Row row = sheet.getRow(rowNum);
 		if (row == null) {
 			row = sheet.createRow(rowNum);
 			initRow(row);
 		}
-		Cell cell = row.getCell(colNum);
+		Cell cell = row.getCell(cellNum);
 		if (cell == null) {
-			cell = row.createCell(colNum);
+			cell = row.createCell(cellNum);
 		}
+		sheet.setActiveCell(new CellAddress(cell));
 		return cell;
 	}
 
 	/**
 	 * 指定位置创建有值单元格
 	 */
-	public SheetBuilder createCell(int rowNum, int colNum, Object value) {
-		Cell cell = createCell(rowNum, colNum);
-		if (value != null) {
-			CellUtils.setCellValue(cell, value);
-		}
+	public SheetBuilder createCell(int rowNum, int cellNum, Object value) {
+		Cell cell = createCell(rowNum, cellNum);
+		CellUtils.setCellValue(cell, value);
 		super.setCellStyle(cell);
 		return this;
 	}
 
 	/**
-	 * 指定单元格添加批注
+	 * 添加合并区域
 	 */
-	public SheetBuilder createCellComment(String comment, String author, int row1, int col1, int row2, int col2) {
-		Cell cell = createCell(row1, col1);
-		ClientAnchor clientAnchor = creationHelper.createClientAnchor();
-		clientAnchor.setCol1(col1);
-		clientAnchor.setCol2(col1 + col2);
-		clientAnchor.setRow1(row1);
-		clientAnchor.setRow2(row1 + row2);
-		clientAnchor.setAnchorType(AnchorType.MOVE_DONT_RESIZE);
-		Comment cellComment = drawing.createCellComment(clientAnchor);
-		cellComment.setString(creationHelper.createRichTextString(comment));
-		cellComment.setAuthor(author);
-		cell.setCellComment(cellComment);
-		return this;
+	public CellRangeBuilder addCellRange(int firstRow, int lastRow, int firstCol, int lastCol) {
+		this.lastRow = Math.max(lastRow, this.lastRow);
+		this.lastCol = Math.max(lastCol, this.lastCol);
+		return new CellRangeBuilder(this, new CellRangeAddress(firstRow, lastRow, firstCol, lastCol));
+	}
+
+	/**
+	 * 创建验证
+	 */
+	public DataValidationBuilder createValidation() {
+		CellAddress activeCell = sheet.getActiveCell();
+		int row = activeCell.getRow();
+		int column = activeCell.getColumn();
+		return new DataValidationBuilder(this).setRegions(row, row, column, column);
+	}
+
+	/**
+	 * 创建图片
+	 */
+	public PictureBuilder<SheetBuilder> createPicture(byte[] pictureData, int format) {
+		CellAddress activeCell = sheet.getActiveCell();
+		int row = activeCell.getRow();
+		int column = activeCell.getColumn();
+		int pictureIndex = sheet.getWorkbook().addPicture(pictureData, format);
+		return new PictureBuilder<>(this, sheet, pictureIndex)
+			.setRow1(row)
+			.setCol1(column)
+			.setSize(1, 1);
+	}
+
+	/**
+	 * 创建批注
+	 */
+	public CellCommentBuilder<SheetBuilder> createCellComment(String comment) {
+		CellAddress activeCell = sheet.getActiveCell();
+		return new CellCommentBuilder<>(this, sheet, comment)
+			.setRow1(activeCell.getRow())
+			.setCol1(activeCell.getColumn());
 	}
 
 	/**
 	 * 指定单元格添加批注
+	 * @deprecated use {@link SheetBuilder#createCellComment(String)} instead.
 	 */
-	public SheetBuilder createCellComment(String comment, String author, ClientAnchor clientAnchor) {
-		int row1 = clientAnchor.getRow1();
-		short col1 = clientAnchor.getCol1();
-		Cell cell = createCell(row1, col1);
-		Comment cellComment = drawing.createCellComment(clientAnchor);
-		cellComment.setString(creationHelper.createRichTextString(comment));
-		cellComment.setAuthor(author);
-		cell.setCellComment(cellComment);
-		return this;
+	@Deprecated
+	public SheetBuilder createCellComment(String comment, String author, int row1, int col1, int row2, int col2) {
+		return new CellCommentBuilder<>(this, sheet, comment)
+			.setRow1(row1)
+			.setCol1(col1)
+			.setSize(col2, row2)
+			.setAuthor(author)
+			.insert();
 	}
 
 	/**
 	 * 当前单元格添加批注
+	 * @deprecated use {@link SheetBuilder#createCellComment(String)} instead.
 	 */
+	@Deprecated
 	public SheetBuilder createCellComment(String comment, String author, int row2, int col2) {
-		Cell cell = createCell();
-		ClientAnchor clientAnchor = creationHelper.createClientAnchor();
-		clientAnchor.setCol1(cell.getColumnIndex());
-		clientAnchor.setCol2(cell.getColumnIndex() + row2);
-		clientAnchor.setRow1(cell.getRowIndex());
-		clientAnchor.setRow2(cell.getRowIndex() + col2);
-		clientAnchor.setAnchorType(AnchorType.MOVE_DONT_RESIZE);
-		Comment cellComment = drawing.createCellComment(clientAnchor);
-		cellComment.setString(creationHelper.createRichTextString(comment));
-		cellComment.setAuthor(author);
-		cell.setCellComment(cellComment);
-		return this;
-	}
-
-	/**
-	 * 指定单元格添加图片
-	 */
-	public SheetBuilder createPicture(byte[] pictureData, int format, int row1, int col1, int row2, int col2) {
-		int pictureIndex = sheet.getWorkbook().addPicture(pictureData, format);
-		ClientAnchor clientAnchor = creationHelper.createClientAnchor();
-		clientAnchor.setCol1(col1);
-		clientAnchor.setCol2(col1 + col2);
-		clientAnchor.setRow1(row1);
-		clientAnchor.setRow2(row1 + row2);
-		drawing.createPicture(clientAnchor, pictureIndex);
-		return this;
-	}
-
-	/**
-	 * 当前单元格添加图片
-	 */
-	public SheetBuilder createPicture(byte[] pictureData, int format, int row2, int col2) {
-		Cell cell = createCell();
-		int pictureIndex = sheet.getWorkbook().addPicture(pictureData, format);
-		ClientAnchor clientAnchor = creationHelper.createClientAnchor();
-		clientAnchor.setCol1(cell.getColumnIndex());
-		clientAnchor.setCol2(cell.getColumnIndex() + col2);
-		clientAnchor.setRow1(cell.getRowIndex());
-		clientAnchor.setRow2(cell.getRowIndex() + row2);
-		drawing.createPicture(clientAnchor, pictureIndex);
-		return this;
+		CellAddress activeCell = sheet.getActiveCell();
+		return new CellCommentBuilder<>(this, sheet, comment)
+			.setRow1(activeCell.getRow())
+			.setCol1(activeCell.getColumn())
+			.setSize(col2, row2)
+			.setAuthor(author)
+			.insert();
 	}
 
 	/**

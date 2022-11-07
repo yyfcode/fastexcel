@@ -12,7 +12,7 @@ import org.springframework.util.Assert;
 /**
  * @author justice
  */
-public class WorkbookBuilder extends CellBuilderHelper<WorkbookBuilder> {
+public class WorkbookBuilder extends CellBuilder<WorkbookBuilder> {
 
 	private final Workbook workbook;
 

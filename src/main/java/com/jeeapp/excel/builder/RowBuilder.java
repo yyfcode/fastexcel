@@ -79,7 +79,8 @@ public class RowBuilder<T> {
 
 		// 数据验证
 		if (header.hasValidation()) {
-			parent.createValidation(firstRow, parent.maxRows - firstRow - 1, lastCol, lastCol)
+			parent.createValidation()
+				.setRegions(lastRow + 1, parent.maxRows - lastRow - 1, lastCol, lastCol)
 				.createConstraint(header.getValidationType(),
 					header.getOperatorType(),
 					header.getFirstFormula(),
@@ -95,12 +96,13 @@ public class RowBuilder<T> {
 
 		// 表头标注
 		if (header.hasComment()) {
-			parent.createCellComment(header.getComment(),
-				header.getCommentAuthor(),
-				header.getFirstRow(),
-				header.getFirstCol(),
-				header.getCommentHeight(),
-				header.getCommentWidth());
+			parent.createCellComment(header.getComment())
+				.setRow1(header.getFirstRow())
+				.setCol1(header.getFirstCol())
+				.setRow2(header.getFirstRow() + header.getCommentWidth())
+				.setCol2(header.getFirstCol() + header.getCommentHeight())
+				.setAuthor(header.getCommentAuthor())
+				.insert();
 		}
 
 		if (CollectionUtils.isNotEmpty(header.getChildren())) {
@@ -119,8 +121,8 @@ public class RowBuilder<T> {
 
 	public RowBuilder<T> createRow(T bean) {
 		Validate.notNull(bean, "bean must be not null");
-		thisRow = parent.lastRow + 1;
-		parent.lastRow = thisRow;
+		parent.lastRow = parent.lastRow + 1;
+		thisRow = parent.lastRow;
 		List<Cell> cells = createCells(bean);
 		for (Cell cell : cells) {
 			int firstRow = cell.getFirstRow();
@@ -184,7 +186,8 @@ public class RowBuilder<T> {
 			// 只保留指定属性，包含子属性
 			properties.removeIf(property -> !matchesProperty(Arrays.asList(names), property));
 		}
-		this.thisRow = parent.lastRow + 1;
+		parent.lastRow = parent.lastRow + 1;
+		thisRow = parent.lastRow;
 		List<Column> headers = createHeader(null, type);
 		for (Column header : headers) {
 			createHeader(header);

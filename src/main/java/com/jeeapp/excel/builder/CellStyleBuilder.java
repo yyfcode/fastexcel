@@ -16,7 +16,7 @@ import com.jeeapp.excel.util.CellUtils;
 /**
  * @author justice
  */
-public class CellStyleBuilder<P extends CellBuilderHelper<P>> {
+public class CellStyleBuilder<P extends CellBuilder<P>> {
 
 	private final P parent;
 

@@ -9,24 +9,22 @@ import org.apache.poi.ss.usermodel.DataValidationConstraint;
 import org.apache.poi.ss.usermodel.DataValidationConstraint.OperatorType;
 import org.apache.poi.ss.usermodel.DataValidationConstraint.ValidationType;
 import org.apache.poi.ss.usermodel.DataValidationHelper;
-import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.springframework.util.Assert;
 
 /**
  * @author Justice
+ * @since 0.0.2
  */
 public class DataValidationBuilder {
 
 	private final SheetBuilder parent;
 
-	private final Sheet sheet;
-
-	private final CellRangeAddressList region;
-
 	private final DataValidationHelper dataValidationHelper;
 
 	private DataValidationConstraint constraint;
+
+	private CellRangeAddressList regions;
 
 	private int validationType;
 
@@ -54,11 +52,9 @@ public class DataValidationBuilder {
 
 	private String promptBoxText;
 
-	public DataValidationBuilder(SheetBuilder parent, Sheet sheet, CellRangeAddressList region) {
+	public DataValidationBuilder(SheetBuilder parent) {
 		this.parent = parent;
-		this.sheet = sheet;
-		this.region = region;
-		this.dataValidationHelper = sheet.getDataValidationHelper();
+		this.dataValidationHelper = parent.sheet.getDataValidationHelper();
 	}
 
 	protected DataValidationBuilder createConstraint(int validationType, int operatorType, String firstFormula,
@@ -96,7 +92,7 @@ public class DataValidationBuilder {
 		return this;
 	}
 
-	public DataValidationBuilder createExplicitListConstraint(String[] explicitListValues) {
+	public DataValidationBuilder createExplicitListConstraint(String... explicitListValues) {
 		this.validationType = ValidationType.LIST;
 		this.explicitListValues = explicitListValues;
 		constraint = dataValidationHelper.createExplicitListConstraint(explicitListValues);
@@ -160,6 +156,11 @@ public class DataValidationBuilder {
 		return this;
 	}
 
+	public DataValidationBuilder setRegions(int firstRow, int lastRow, int firstCol, int lastCol) {
+		this.regions = new CellRangeAddressList(firstRow, lastRow, firstCol, lastCol);
+		return this;
+	}
+
 	public DataValidationBuilder allowedEmptyCell(boolean allowedEmptyCell) {
 		this.allowedEmptyCell = allowedEmptyCell;
 		return this;
@@ -198,31 +199,31 @@ public class DataValidationBuilder {
 		return this;
 	}
 
-	public DataValidationBuilder createValidation(int firstRow, int lastRow, int firstCol, int lastCol) {
+	public DataValidationBuilder createValidation() {
 		this.addValidationData();
-		return parent.createValidation(firstRow, lastRow, firstCol, lastCol);
+		return parent.createValidation();
 	}
 
 	public SheetBuilder addValidationData() {
 		Assert.notNull(constraint, "Constraint must not be null!");
-		DataValidation validation = dataValidationHelper.createValidation(constraint, region);
+		DataValidation validation = dataValidationHelper.createValidation(constraint, regions);
 		validation.setEmptyCellAllowed(allowedEmptyCell);
 		validation.setErrorStyle(errorStyle);
+		validation.setShowErrorBox(showErrorBox);
 		if (showErrorBox) {
-			validation.setShowErrorBox(true);
 			if (StringUtils.isBlank(errorBoxText)) {
 				errorBoxText = createDefaultText(true);
 			}
 			validation.createErrorBox(errorBoxTitle, errorBoxText);
 		}
+		validation.setShowPromptBox(showPromptBox);
 		if (showPromptBox) {
-			validation.setShowPromptBox(true);
 			if (StringUtils.isBlank(promptBoxText)) {
 				promptBoxText = createDefaultText(false);
 			}
 			validation.createPromptBox(promptBoxTitle, promptBoxText);
 		}
-		sheet.addValidationData(validation);
+		parent.sheet.addValidationData(validation);
 		return parent;
 	}
 
