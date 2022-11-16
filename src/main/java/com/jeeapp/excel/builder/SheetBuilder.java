@@ -1,7 +1,7 @@
 package com.jeeapp.excel.builder;
 
 import java.util.Collection;
-import java.util.Map;
+import java.util.Set;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -12,15 +12,14 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellAddress;
-import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.xssf.streaming.SXSSFSheet;
+import com.jeeapp.excel.model.Comment;
 import com.jeeapp.excel.util.CellUtils;
 
 /**
  * @author justice
  */
 @Slf4j
-public class SheetBuilder extends CellBuilder<SheetBuilder> {
+public class SheetBuilder extends CellBuilderHelper<SheetBuilder> {
 
 	private final WorkbookBuilder parent;
 
@@ -32,10 +31,6 @@ public class SheetBuilder extends CellBuilder<SheetBuilder> {
 
 	protected final int maxRows;
 
-	protected int lastRow = -1;
-
-	protected int lastCol = -1;
-
 	public SheetBuilder(WorkbookBuilder parent, Sheet sheet) {
 		super(parent);
 		this.parent = parent;
@@ -43,7 +38,7 @@ public class SheetBuilder extends CellBuilder<SheetBuilder> {
 		this.drawing = sheet.createDrawingPatriarch();
 		this.creationHelper = sheet.getWorkbook().getCreationHelper();
 		this.maxRows = sheet.getWorkbook().getSpreadsheetVersion().getMaxRows();
-		super.initSheet(sheet);
+		initSheet(sheet);
 	}
 
 	/**
@@ -65,32 +60,10 @@ public class SheetBuilder extends CellBuilder<SheetBuilder> {
 	}
 
 	/**
-	 * 设置默认列宽
-	 */
-	@Override
-	public SheetBuilder autoSizeColumns(Integer... columns) {
-		if (sheet instanceof SXSSFSheet) {
-			((SXSSFSheet) sheet).trackAllColumnsForAutoSizing();
-		}
-		for (Integer column : columns) {
-			sheet.autoSizeColumn(column);
-		}
-		return this;
-	}
-
-	@Override
-	protected void addColumnStyle(int column, Map<String, Object> properties) {
-		super.addColumnStyle(column, properties);
-		setColumnStyle(sheet, column);
-	}
-
-	/**
 	 * 创建空行
 	 */
 	public SheetBuilder createRow() {
-		lastRow = lastRow + 1;
-		initRow(sheet.createRow(lastRow));
-		lastCol = -1;
+		sheet.createRow(sheet.getLastRowNum() + 1);
 		return this;
 	}
 
@@ -98,7 +71,7 @@ public class SheetBuilder extends CellBuilder<SheetBuilder> {
 	 * 设置行高
 	 */
 	public SheetBuilder setRowHeight(int height) {
-		Row row = sheet.getRow(lastRow);
+		Row row = sheet.getRow(sheet.getLastRowNum());
 		if (row != null) {
 			row.setHeightInPoints(height);
 		}
@@ -108,7 +81,7 @@ public class SheetBuilder extends CellBuilder<SheetBuilder> {
 	/**
 	 * 创建单行
 	 */
-	public SheetBuilder createRow(Object[] cells) {
+	public SheetBuilder createRow(Object... cells) {
 		createRow();
 		for (Object value : cells) {
 			createCell(value);
@@ -131,16 +104,15 @@ public class SheetBuilder extends CellBuilder<SheetBuilder> {
 	 */
 	public SheetBuilder createRows(Collection<? extends com.jeeapp.excel.model.Row> rows) {
 		for (com.jeeapp.excel.model.Row row : rows) {
-			createRow(row.getCellValues());
-			if (CollectionUtils.isNotEmpty(row.getComments())) {
-				for (com.jeeapp.excel.model.Comment comment : row.getComments()) {
-					createCellComment(comment.getText(),
-						comment.getAuthor(),
-						lastRow,
-						comment.getColNum(),
-						1,
-						3
-					);
+			createRow((Object[]) row.getCellValues());
+			Set<Comment> comments = row.getComments();
+			if (CollectionUtils.isNotEmpty(comments)) {
+				for (com.jeeapp.excel.model.Comment comment : comments) {
+					matchingCell(sheet.getLastRowNum(), comment.getColNum())
+						.setCommentSize(1, 3)
+						.setCommentText(comment.getText())
+						.setCommentAuthor(comment.getAuthor())
+						.end();
 				}
 			}
 		}
@@ -150,16 +122,17 @@ public class SheetBuilder extends CellBuilder<SheetBuilder> {
 	/**
 	 * 创建单元格
 	 */
-	private Cell createCell() {
-		lastRow = lastRow == -1 ? 0 : lastRow;
-		Row row = sheet.getRow(lastRow);
+	protected Cell createCell() {
+		int lastRowNum = sheet.getLastRowNum() == -1 ? 0 : sheet.getLastRowNum();
+		Row row = sheet.getRow(lastRowNum);
 		if (row == null) {
-			row = sheet.createRow(lastRow);
-			initRow(row);
+			row = sheet.createRow(lastRowNum);
 		}
-		lastCol = lastCol + 1;
-		Cell cell = row.createCell(lastCol);
-		sheet.setActiveCell(new CellAddress(cell));
+		int lastCellNum = row.getLastCellNum() == -1 ? 0 : row.getLastCellNum();
+		Cell cell = row.getCell(lastCellNum);
+		if (cell == null) {
+			cell = row.createCell(lastCellNum);
+		}
 		return cell;
 	}
 
@@ -169,107 +142,106 @@ public class SheetBuilder extends CellBuilder<SheetBuilder> {
 	public SheetBuilder createCell(Object value) {
 		Cell cell = createCell();
 		CellUtils.setCellValue(cell, value);
-		super.setCellStyle(cell);
 		return this;
 	}
 
 	/**
 	 * 指定位置创建无值单元格
 	 */
-	private Cell createCell(int rowNum, int cellNum) {
-		Row row = sheet.getRow(rowNum);
+	protected Cell createCell(CellAddress cellAddress) {
+		Row row = sheet.getRow(cellAddress.getRow());
 		if (row == null) {
-			row = sheet.createRow(rowNum);
-			initRow(row);
+			row = sheet.createRow(cellAddress.getRow());
 		}
-		Cell cell = row.getCell(cellNum);
+		Cell cell = row.getCell(cellAddress.getColumn());
 		if (cell == null) {
-			cell = row.createCell(cellNum);
+			cell = row.createCell(cellAddress.getColumn());
 		}
-		sheet.setActiveCell(new CellAddress(cell));
 		return cell;
 	}
 
 	/**
 	 * 指定位置创建有值单元格
 	 */
-	public SheetBuilder createCell(int rowNum, int cellNum, Object value) {
-		Cell cell = createCell(rowNum, cellNum);
+	public SheetBuilder createCell(CellAddress cellAddress, Object value) {
+		Cell cell = createCell(cellAddress);
 		CellUtils.setCellValue(cell, value);
-		super.setCellStyle(cell);
 		return this;
 	}
 
 	/**
-	 * 添加合并区域
+	 * 指定位置创建有值单元格
 	 */
+	public SheetBuilder createCell(int row, int column, Object value) {
+		return createCell(new CellAddress(row, column), value);
+	}
+
+
+	/**
+	 * @deprecated use {@link SheetBuilder#matchingRegion(int, int, int, int)} instead.
+	 */
+	@Deprecated
 	public CellRangeBuilder addCellRange(int firstRow, int lastRow, int firstCol, int lastCol) {
-		this.lastRow = Math.max(lastRow, this.lastRow);
-		this.lastCol = Math.max(lastCol, this.lastCol);
-		return new CellRangeBuilder(this, new CellRangeAddress(firstRow, lastRow, firstCol, lastCol));
+		return new CellRangeBuilder(this, firstRow, lastRow, firstCol, lastCol);
 	}
 
 	/**
-	 * 创建验证
+	 * 匹配区域
+	 * @param firstRow 起始行
+	 * @param lastRow 结束行必须等于或大于 {@code firstRow}
+	 * @param firstCol 起始列
+	 * @param lastCol 结束列必须等于或大于 {@code firstCol}
 	 */
-	public DataValidationBuilder createValidation() {
-		CellAddress activeCell = sheet.getActiveCell();
-		int row = activeCell.getRow();
-		int column = activeCell.getColumn();
-		return new DataValidationBuilder(this).setRegions(row, row, column, column);
+	@Override
+	public CellRangeBuilder matchingRegion(int firstRow, int lastRow, int firstCol, int lastCol) {
+		return new CellRangeBuilder(this, firstRow, lastRow, firstCol, lastCol);
 	}
 
 	/**
-	 * 创建图片
+	 * 匹配单元格
 	 */
-	public PictureBuilder<SheetBuilder> createPicture(byte[] pictureData, int format) {
-		CellAddress activeCell = sheet.getActiveCell();
-		int row = activeCell.getRow();
-		int column = activeCell.getColumn();
-		int pictureIndex = sheet.getWorkbook().addPicture(pictureData, format);
-		return new PictureBuilder<>(this, sheet, pictureIndex)
-			.setRow1(row)
-			.setCol1(column)
-			.setSize(1, 1);
+	public CellBuilder matchingCell(CellAddress cellAddress) {
+		return new CellBuilder(this, cellAddress);
 	}
 
 	/**
-	 * 创建批注
+	 * 匹配单元格
 	 */
-	public CellCommentBuilder<SheetBuilder> createCellComment(String comment) {
-		CellAddress activeCell = sheet.getActiveCell();
-		return new CellCommentBuilder<>(this, sheet, comment)
-			.setRow1(activeCell.getRow())
-			.setCol1(activeCell.getColumn());
+	public CellBuilder matchingCell(int row, int column) {
+		return matchingCell(new CellAddress(row, column));
+	}
+
+	/**
+	 * 匹配单元格
+	 */
+	public CellBuilder matchingCell() {
+		return matchingCell(sheet.getLastRowNum(), sheet.getRow(sheet.getLastRowNum()).getLastCellNum());
 	}
 
 	/**
 	 * 指定单元格添加批注
-	 * @deprecated use {@link SheetBuilder#createCellComment(String)} instead.
+	 * @deprecated use {@link SheetBuilder#matchingCell(CellAddress)} instead.
 	 */
 	@Deprecated
 	public SheetBuilder createCellComment(String comment, String author, int row1, int col1, int row2, int col2) {
-		return new CellCommentBuilder<>(this, sheet, comment)
-			.setRow1(row1)
-			.setCol1(col1)
-			.setSize(col2, row2)
-			.setAuthor(author)
-			.insert();
+		return matchingCell(new CellAddress(row1, col1))
+			.setCommentText(comment)
+			.setCommentSize(row2, col2)
+			.setCommentAuthor(author)
+			.end();
 	}
 
 	/**
 	 * 当前单元格添加批注
-	 * @deprecated use {@link SheetBuilder#createCellComment(String)} instead.
+	 * @deprecated use {@link SheetBuilder#matchingCell()} instead.
 	 */
 	@Deprecated
 	public SheetBuilder createCellComment(String comment, String author, int row2, int col2) {
-		CellAddress activeCell = sheet.getActiveCell();
-		return new CellCommentBuilder<>(this, sheet, comment)
-			.setRow1(activeCell.getRow())
-			.setCol1(activeCell.getColumn())
-			.setSize(col2, row2)
-			.setAuthor(author)
-			.insert();
+		return matchingCell()
+			.setCommentText(comment)
+			.setCommentSize(row2, col2)
+			.setCommentAuthor(author)
+			.end();
 	}
 
 	/**
@@ -283,20 +255,27 @@ public class SheetBuilder extends CellBuilder<SheetBuilder> {
 	 * 创建工作表
 	 */
 	public SheetBuilder createSheet() {
-		return parent.createSheet();
+		return end().parent.createSheet();
 	}
 
 	/**
 	 * 创建工作表
 	 */
 	public SheetBuilder createSheet(String sheetName) {
-		return parent.createSheet(sheetName);
+		return end().parent.createSheet(sheetName);
 	}
 
-	/**
-	 * 构建工作簿
-	 */
+	@Override
 	public Workbook build() {
-		return parent.build();
+		return end().parent.build();
+	}
+
+	protected SheetBuilder end() {
+		return end(sheet);
+	}
+
+	@Override
+	protected SheetBuilder self() {
+		return this;
 	}
 }

@@ -22,10 +22,13 @@ import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.FormulaError;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellUtil;
+import org.apache.poi.ss.util.RegionUtil;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 
 /**
@@ -95,37 +98,88 @@ public class CellUtils {
 			CellUtil.BORDER_TOP
 		)));
 
-	public static void setCellStyleProperties(Cell cell, Map<String, Object> properties) {
-		Workbook workbook = cell.getSheet().getWorkbook();
-		mergeFontProperties(workbook, properties);
-		CellUtil.setCellStyleProperties(cell, properties);
-	}
-
-	public static void setColumnStyleProperties(Sheet sheet, int column, Map<String, Object> properties) {
-		Workbook workbook = sheet.getWorkbook();
-		mergeFontProperties(workbook, properties);
-		CellStyle originalStyle = sheet.getColumnStyle(column);
+	private static CellStyle getNewStyle(CellStyle originalStyle, Workbook workbook, Map<String, Object> properties) {
 		CellStyle newStyle = null;
 		Map<String, Object> values = getFormatProperties(originalStyle);
 		putAll(properties, values);
+
 		// index seems like what index the cellstyle is in the list of styles for a workbook.
 		// not good to compare on!
 		int numberCellStyles = workbook.getNumCellStyles();
+
 		for (int i = 0; i < numberCellStyles; i++) {
 			CellStyle wbStyle = workbook.getCellStyleAt(i);
 			Map<String, Object> wbStyleMap = getFormatProperties(wbStyle);
+
 			// the desired style already exists in the workbook. Use the existing style.
 			if (wbStyleMap.equals(values)) {
 				newStyle = wbStyle;
 				break;
 			}
 		}
+
 		// the desired style does not exist in the workbook. Create a new style with desired properties.
 		if (newStyle == null) {
 			newStyle = workbook.createCellStyle();
 			setFormatProperties(newStyle, workbook, values);
 		}
-		sheet.setDefaultColumnStyle(column, newStyle);
+		return newStyle;
+	}
+
+	public static void setRegionStyleProperties(Sheet sheet, CellRangeAddress region, Map<String, Object> properties) {
+		if (properties.containsKey(CellUtil.BORDER_LEFT)) {
+			BorderStyle borderStyle = CellUtils.getBorderStyle(properties, CellUtil.BORDER_LEFT);
+			RegionUtil.setBorderLeft(borderStyle, region, sheet);
+		}
+		if (properties.containsKey(CellUtil.BORDER_BOTTOM)) {
+			BorderStyle borderStyle = CellUtils.getBorderStyle(properties, CellUtil.BORDER_BOTTOM);
+			RegionUtil.setBorderBottom(borderStyle, region, sheet);
+		}
+		if (properties.containsKey(CellUtil.BORDER_RIGHT)) {
+			BorderStyle borderStyle = CellUtils.getBorderStyle(properties, CellUtil.BORDER_RIGHT);
+			RegionUtil.setBorderRight(borderStyle, region, sheet);
+		}
+		if (properties.containsKey(CellUtil.BORDER_TOP)) {
+			BorderStyle borderStyle = CellUtils.getBorderStyle(properties, CellUtil.BORDER_TOP);
+			RegionUtil.setBorderTop(borderStyle, region, sheet);
+		}
+		if (properties.containsKey(CellUtil.LEFT_BORDER_COLOR)) {
+			short borderColor = CellUtils.getShort(properties, CellUtil.LEFT_BORDER_COLOR);
+			RegionUtil.setLeftBorderColor(borderColor, region, sheet);
+		}
+		if (properties.containsKey(CellUtil.BOTTOM_BORDER_COLOR)) {
+			short borderColor = CellUtils.getShort(properties, CellUtil.BOTTOM_BORDER_COLOR);
+			RegionUtil.setRightBorderColor(borderColor, region, sheet);
+		}
+		if (properties.containsKey(CellUtil.RIGHT_BORDER_COLOR)) {
+			short borderColor = CellUtils.getShort(properties, CellUtil.RIGHT_BORDER_COLOR);
+			RegionUtil.setBottomBorderColor(borderColor, region, sheet);
+		}
+		if (properties.containsKey(CellUtil.TOP_BORDER_COLOR)) {
+			short borderColor = CellUtils.getShort(properties, CellUtil.TOP_BORDER_COLOR);
+			RegionUtil.setTopBorderColor(borderColor, region, sheet);
+		}
+	}
+
+	public static void setRowStyleProperties(Sheet sheet, int row, Map<String, Object> properties) {
+		Workbook workbook = sheet.getWorkbook();
+		mergeFontProperties(workbook, properties);
+		CellStyle originalStyle = sheet.getRow(row).getRowStyle();
+		sheet.getRow(row).setRowStyle(getNewStyle(originalStyle, workbook, properties));
+	}
+
+	public static void setCellStyleProperties(Cell cell, Map<String, Object> properties) {
+		Workbook workbook = cell.getSheet().getWorkbook();
+		mergeFontProperties(workbook, properties);
+		CellStyle originalStyle = cell.getCellStyle();
+		cell.setCellStyle(getNewStyle(originalStyle, workbook, properties));
+	}
+
+	public static void setColumnStyleProperties(Sheet sheet, int column, Map<String, Object> properties) {
+		Workbook workbook = sheet.getWorkbook();
+		mergeFontProperties(workbook, properties);
+		CellStyle originalStyle = sheet.getColumnStyle(column);
+		sheet.setDefaultColumnStyle(column, getNewStyle(originalStyle, workbook, properties));
 	}
 
 	private static void mergeFontProperties(Workbook workbook, Map<String, Object> properties) {
@@ -166,8 +220,16 @@ public class CellUtils {
 		put(properties, CellUtil.BOTTOM_BORDER_COLOR, style.getBottomBorderColor());
 		put(properties, CellUtil.DATA_FORMAT, style.getDataFormat());
 		put(properties, CellUtil.FILL_PATTERN, style.getFillPattern());
-		put(properties, CellUtil.FILL_FOREGROUND_COLOR, style.getFillForegroundColor());
-		put(properties, CellUtil.FILL_BACKGROUND_COLOR, style.getFillBackgroundColor());
+		// The apache poi CellUtil only works using org.apache.poi.ss.*.
+		// It cannot work using a XSSFColor because CellStyle has no method to get/set fill foreground color from a XSSFColor.
+		// It only works using short color indexes from IndexedColors.
+		// So if it's black here, change it to white
+		short fillForegroundColor = style.getFillForegroundColor();
+		put(properties, CellUtil.FILL_FOREGROUND_COLOR,
+			fillForegroundColor == IndexedColors.AUTOMATIC.index ? IndexedColors.WHITE.index : fillForegroundColor);
+		short fillBackgroundColor = style.getFillBackgroundColor();
+		put(properties, CellUtil.FILL_BACKGROUND_COLOR,
+			fillBackgroundColor == IndexedColors.AUTOMATIC.index ? IndexedColors.WHITE.index : fillBackgroundColor);
 		put(properties, CellUtil.FONT, style.getFontIndex());
 		put(properties, CellUtil.HIDDEN, style.getHidden());
 		put(properties, CellUtil.INDENTION, style.getIndention());
@@ -257,7 +319,7 @@ public class CellUtils {
 		}
 	}
 
-	private static Byte getByte(Map<String, Object> properties, String name) {
+	public static Byte getByte(Map<String, Object> properties, String name) {
 		Object value = properties.get(name);
 		if (value instanceof Byte) {
 			return (Byte) value;
@@ -265,7 +327,7 @@ public class CellUtils {
 		return 0;
 	}
 
-	private static String getString(Map<String, Object> properties, String name) {
+	public static String getString(Map<String, Object> properties, String name) {
 		Object value = properties.get(name);
 		if (value instanceof String) {
 			return String.valueOf(value);
@@ -273,7 +335,7 @@ public class CellUtils {
 		return "Arial";
 	}
 
-	private static boolean getBoolean(Map<String, Object> properties, String name) {
+	public static boolean getBoolean(Map<String, Object> properties, String name) {
 		Object value = properties.get(name);
 		if (value instanceof Boolean) {
 			return (Boolean) value;
@@ -281,7 +343,7 @@ public class CellUtils {
 		return false;
 	}
 
-	private static short getShort(Map<String, Object> properties, String name) {
+	public static short getShort(Map<String, Object> properties, String name) {
 		Object value = properties.get(name);
 		if (value instanceof Number) {
 			return ((Number) value).shortValue();
@@ -289,7 +351,7 @@ public class CellUtils {
 		return 0;
 	}
 
-	private static int getInt(Map<String, Object> properties, String name) {
+	public static int getInt(Map<String, Object> properties, String name) {
 		Object value = properties.get(name);
 		if (value instanceof Number) {
 			return ((Number) value).intValue();
@@ -297,7 +359,7 @@ public class CellUtils {
 		return 0;
 	}
 
-	private static FillPatternType getFillPattern(Map<String, Object> properties, String name) {
+	public static FillPatternType getFillPattern(Map<String, Object> properties, String name) {
 		Object value = properties.get(name);
 		FillPatternType pattern;
 		if (value instanceof FillPatternType) {
@@ -315,7 +377,7 @@ public class CellUtils {
 		return pattern;
 	}
 
-	private static BorderStyle getBorderStyle(Map<String, Object> properties, String name) {
+	public static BorderStyle getBorderStyle(Map<String, Object> properties, String name) {
 		Object value = properties.get(name);
 		BorderStyle border;
 		if (value instanceof BorderStyle) {
@@ -333,7 +395,7 @@ public class CellUtils {
 		return border;
 	}
 
-	private static HorizontalAlignment getHorizontalAlignment(Map<String, Object> properties, String name) {
+	public static HorizontalAlignment getHorizontalAlignment(Map<String, Object> properties, String name) {
 		Object value = properties.get(name);
 		HorizontalAlignment align;
 		if (value instanceof HorizontalAlignment) {
@@ -351,7 +413,7 @@ public class CellUtils {
 		return align;
 	}
 
-	private static VerticalAlignment getVerticalAlignment(Map<String, Object> properties, String name) {
+	public static VerticalAlignment getVerticalAlignment(Map<String, Object> properties, String name) {
 		Object value = properties.get(name);
 		VerticalAlignment align;
 		if (value instanceof VerticalAlignment) {

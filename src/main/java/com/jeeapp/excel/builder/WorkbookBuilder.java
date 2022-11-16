@@ -1,8 +1,6 @@
 package com.jeeapp.excel.builder;
 
-import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
-import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.WorkbookUtil;
@@ -12,7 +10,7 @@ import org.springframework.util.Assert;
 /**
  * @author justice
  */
-public class WorkbookBuilder extends CellBuilder<WorkbookBuilder> {
+public class WorkbookBuilder extends CellBuilderHelper<WorkbookBuilder> {
 
 	private final Workbook workbook;
 
@@ -30,12 +28,9 @@ public class WorkbookBuilder extends CellBuilder<WorkbookBuilder> {
 			.matchingAll()
 			.setFontHeight(12)
 			.setFontName("微软雅黑")
-			.setFillPattern(FillPatternType.NO_FILL)
-			.setFillForegroundColor(IndexedColors.WHITE)
-			.setFillBackgroundColor(IndexedColors.WHITE)
 			.setVerticalAlignment(VerticalAlignment.CENTER)
 			.setAlignment(HorizontalAlignment.CENTER)
-			.addCellStyle();
+			.end();
 	}
 
 	/**
@@ -74,10 +69,8 @@ public class WorkbookBuilder extends CellBuilder<WorkbookBuilder> {
 		return new SheetBuilder(this, workbook.createSheet(WorkbookUtil.createSafeSheetName(sheetName)));
 	}
 
-	/**
-	 * 构建Excel工作簿
-	 */
-	public Workbook build() {
-		return workbook;
+	@Override
+	protected WorkbookBuilder self() {
+		return this;
 	}
 }

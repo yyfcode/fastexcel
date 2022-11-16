@@ -2,88 +2,70 @@ package com.jeeapp.excel.builder;
 
 import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.ss.usermodel.ClientAnchor.AnchorType;
-import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Picture;
 
 /**
  * @author Justice
+ * @since 0.0.2
  */
-public class PictureBuilder<P> {
+public class PictureBuilder<B extends PictureBuilder<B>> extends DataValidationBuilder<B> {
 
-	private final P parent;
+	private final SheetBuilder parent;
 
-	private final Sheet sheet;
-
-	private final int pictureIndex;
+	private int pictureIndex = 0;
 
 	private ClientAnchor clientAnchor;
 
-	public PictureBuilder(P parent, Sheet sheet, int pictureIndex) {
+	private Double scaleX;
+
+	private Double scaleY;
+
+	public PictureBuilder(SheetBuilder parent, int firstRow, int lastRow, int firstCol, int lastCol) {
+		super(parent, firstRow, lastRow, firstCol, lastCol);
 		this.parent = parent;
-		this.sheet = sheet;
-		this.pictureIndex = pictureIndex;
-		this.clientAnchor = sheet.getWorkbook().getCreationHelper().createClientAnchor();
+		this.clientAnchor = parent.workbook.getCreationHelper().createClientAnchor();
+		this.clientAnchor.setRow1(firstRow);
+		this.clientAnchor.setCol1(firstCol);
+		this.clientAnchor.setRow2(lastRow + 1);
+		this.clientAnchor.setCol2(lastCol + 1);
 	}
 
-	public PictureBuilder<P> setRow1(int row1) {
-		this.clientAnchor.setRow1(row1);
-		return this;
+	public B addPicture(byte[] pictureData, int format) {
+		this.pictureIndex = parent.workbook.addPicture(pictureData, format);
+		return self();
 	}
 
-	public PictureBuilder<P> setCol1(int col1) {
-		this.clientAnchor.setCol1(col1);
-		return this;
+	public B resizePicture(double scaleX, double scaleY) {
+		this.scaleX = scaleX;
+		this.scaleY = scaleY;
+		return self();
 	}
 
-	public PictureBuilder<P> setRow2(int row2) {
-		this.clientAnchor.setRow2(row2);
-		return this;
-	}
-
-	public PictureBuilder<P> setCol2(int col2) {
-		this.clientAnchor.setCol2(col2);
-		return this;
-	}
-
-	public PictureBuilder<P> setSize(int width, int height) {
-		this.clientAnchor.setCol1(clientAnchor.getCol1());
-		this.clientAnchor.setRow1(clientAnchor.getRow1());
-		this.clientAnchor.setCol2(clientAnchor.getCol1() + height);
-		this.clientAnchor.setRow2(clientAnchor.getRow1() + width);
-		return this;
-	}
-
-	public PictureBuilder<P> setDx1(int dx1) {
-		this.clientAnchor.setDx1(dx1);
-		return this;
-	}
-
-	public PictureBuilder<P> setDx2(int dx2) {
-		this.clientAnchor.setDx2(dx2);
-		return this;
-	}
-
-	public PictureBuilder<P> setDy1(int dy1) {
-		this.clientAnchor.setDy1(dy1);
-		return this;
-	}
-
-	public PictureBuilder<P> setDy2(int dy2) {
-		this.clientAnchor.setDy2(dy2);
-		return this;
-	}
-
-	public PictureBuilder<P> setAnchorType(AnchorType anchorType) {
+	public B setPictureAnchorType(AnchorType anchorType) {
 		this.clientAnchor.setAnchorType(anchorType);
-		return this;
+		return self();
 	}
 
-	public PictureBuilder<P> setClientAnchor(ClientAnchor clientAnchor) {
-		this.clientAnchor = clientAnchor;
-		return this;
+	public B setPictureSize(int width, int height) {
+		this.clientAnchor.setRow2(region.getLastRow() + width);
+		this.clientAnchor.setCol2(region.getLastColumn() + height);
+		return self();
 	}
 
-	public P insert() {
-		sheet.getDrawingPatriarch().createPicture(clientAnchor, pictureIndex);
-		return parent;
+	@Override
+	@SuppressWarnings("unchecked")
+	protected B self() {
+		return (B) this;
+	}
+
+	@Override
+	public SheetBuilder end() {
+		if (pictureIndex > 0) {
+			Picture picture = parent.sheet.getDrawingPatriarch().createPicture(clientAnchor, pictureIndex);
+			if (scaleX != null && scaleY != null) {
+				picture.resize(scaleX, scaleY);
+			}
+		}
+		return super.end();
 	}
 }

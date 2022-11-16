@@ -146,12 +146,4 @@ public class Column extends Cell {
 
 		return column;
 	}
-
-	public boolean hasComment() {
-		return StringUtils.isNotBlank(this.getComment());
-	}
-
-	public boolean hasValidation() {
-		return validationType >= 0;
-	}
 }

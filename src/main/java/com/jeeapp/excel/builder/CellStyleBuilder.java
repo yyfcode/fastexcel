@@ -10,21 +10,25 @@ import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellUtil;
 import com.jeeapp.excel.util.CellUtils;
 
 /**
  * @author justice
  */
-public class CellStyleBuilder<P extends CellBuilder<P>> {
+public class CellStyleBuilder<B extends CellStyleBuilder<B, P>, P extends CellBuilderHelper<P>> {
 
 	private final P parent;
+
+	private final Map<String, Object> properties;
 
 	private Predicate<Cell> predicate;
 
 	private Integer column;
 
-	private final Map<String, Object> properties;
+	protected CellRangeAddress region;
 
 	protected CellStyleBuilder(P parent) {
 		this.parent = parent;
@@ -37,332 +41,353 @@ public class CellStyleBuilder<P extends CellBuilder<P>> {
 		this.properties = new HashMap<>();
 	}
 
-
 	protected CellStyleBuilder(P parent, Predicate<Cell> predicate) {
 		this.parent = parent;
 		this.predicate = predicate;
 		this.properties = new HashMap<>();
 	}
 
+	protected CellStyleBuilder(P parent, int firstRow, int lastRow, int firstCol, int lastCol) {
+		this.parent = parent;
+		this.region = new CellRangeAddress(firstRow, lastRow, firstCol, lastCol);
+		this.predicate = cell -> cell.getColumnIndex() >= region.getFirstColumn()
+			&& cell.getColumnIndex() <= region.getLastColumn()
+			&& cell.getRowIndex() >= region.getFirstRow()
+			&& cell.getRowIndex() <= region.getLastRow();
+		this.properties = new HashMap<>();
+	}
+
 	/**
 	 * 字符集
 	 */
-	public CellStyleBuilder<P> setCharSet(byte charSet) {
+	public B setCharSet(byte charSet) {
 		properties.put(CellUtils.CHAR_SET, charSet);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 斜体
 	 */
-	public CellStyleBuilder<P> setItalic(boolean italic) {
+	public B setItalic(boolean italic) {
 		properties.put(CellUtils.ITALIC, italic);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 字体
 	 */
-	public CellStyleBuilder<P> setFontName(String fontName) {
+	public B setFontName(String fontName) {
 		properties.put(CellUtils.FONT_NAME, fontName);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 偏移量
 	 */
-	public CellStyleBuilder<P> setTypeOffset(byte typeOffset) {
+	public B setTypeOffset(byte typeOffset) {
 		properties.put(CellUtils.TYPE_OFFSET, typeOffset);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 下划线
 	 */
-	public CellStyleBuilder<P> setUnderline(byte underline) {
+	public B setUnderline(byte underline) {
 		properties.put(CellUtils.UNDERLINE, underline);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 字体大小
 	 */
-	public CellStyleBuilder<P> setFontHeight(int fontHeight) {
+	public B setFontHeight(int fontHeight) {
 		properties.put(CellUtils.FONT_HEIGHT, (short) (fontHeight * 20));
-		return this;
+		return self();
 	}
 
 	/**
 	 * 删除线
 	 */
-	public CellStyleBuilder<P> setStrikeout(boolean strikeout) {
+	public B setStrikeout(boolean strikeout) {
 		properties.put(CellUtils.STRIKEOUT, strikeout);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 粗体
 	 */
-	public CellStyleBuilder<P> setFontBold(boolean bold) {
+	public B setFontBold(boolean bold) {
 		properties.put(CellUtils.BOLD, bold);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 字体颜色
 	 */
-	public CellStyleBuilder<P> setFontColor(IndexedColors color) {
+	public B setFontColor(IndexedColors color) {
 		properties.put(CellUtils.COLOR, color.getIndex());
-		return this;
+		return self();
 	}
 
 	/**
 	 * 字体颜色
 	 */
-	public CellStyleBuilder<P> setFontColor(short color) {
+	public B setFontColor(short color) {
 		properties.put(CellUtils.COLOR, color);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 隐藏
 	 */
-	public CellStyleBuilder<P> setHidden(boolean hidden) {
+	public B setHidden(boolean hidden) {
 		properties.put(CellUtil.HIDDEN, hidden);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 锁定
 	 */
-	public CellStyleBuilder<P> setLocked(boolean locked) {
+	public B setLocked(boolean locked) {
 		properties.put(CellUtil.LOCKED, locked);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 缩进
 	 */
-	public CellStyleBuilder<P> setIndention(short indent) {
+	public B setIndention(short indent) {
 		properties.put(CellUtil.INDENTION, indent);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 旋转
 	 */
-	public CellStyleBuilder<P> setRotation(short rotation) {
+	public B setRotation(short rotation) {
 		properties.put(CellUtil.ROTATION, rotation);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 换行
 	 */
-	public CellStyleBuilder<P> setWrapText(boolean wrapText) {
+	public B setWrapText(boolean wrapText) {
 		properties.put(CellUtil.WRAP_TEXT, wrapText);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 横向位置
 	 */
-	public CellStyleBuilder<P> setAlignment(HorizontalAlignment alignment) {
+	public B setAlignment(HorizontalAlignment alignment) {
 		properties.put(CellUtil.ALIGNMENT, alignment);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 纵向位置
 	 */
-	public CellStyleBuilder<P> setVerticalAlignment(VerticalAlignment alignment) {
+	public B setVerticalAlignment(VerticalAlignment alignment) {
 		properties.put(CellUtil.VERTICAL_ALIGNMENT, alignment);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 线框样式
 	 */
-	public CellStyleBuilder<P> setBorder(BorderStyle borderStyle) {
+	public B setBorder(BorderStyle borderStyle) {
 		properties.put(CellUtil.BORDER_TOP, borderStyle);
 		properties.put(CellUtil.BORDER_BOTTOM, borderStyle);
 		properties.put(CellUtil.BORDER_LEFT, borderStyle);
 		properties.put(CellUtil.BORDER_RIGHT, borderStyle);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 上边线框样式
 	 */
-	public CellStyleBuilder<P> setBorderTop(BorderStyle borderStyle) {
+	public B setBorderTop(BorderStyle borderStyle) {
 		properties.put(CellUtil.BORDER_TOP, borderStyle);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 左边线框样式
 	 */
-	public CellStyleBuilder<P> setBorderLeft(BorderStyle borderStyle) {
+	public B setBorderLeft(BorderStyle borderStyle) {
 		properties.put(CellUtil.BORDER_LEFT, borderStyle);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 下边线框样式
 	 */
-	public CellStyleBuilder<P> setBorderBottom(BorderStyle borderStyle) {
+	public B setBorderBottom(BorderStyle borderStyle) {
 		properties.put(CellUtil.BORDER_BOTTOM, borderStyle);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 右边线框样式
 	 */
-	public CellStyleBuilder<P> setBorderRight(BorderStyle borderStyle) {
+	public B setBorderRight(BorderStyle borderStyle) {
 		properties.put(CellUtil.BORDER_RIGHT, borderStyle);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 线框颜色
 	 */
-	public CellStyleBuilder<P> setBorderColor(IndexedColors color) {
+	public B setBorderColor(IndexedColors color) {
 		short index = color.getIndex();
 		properties.put(CellUtil.TOP_BORDER_COLOR, index);
 		properties.put(CellUtil.BOTTOM_BORDER_COLOR, index);
 		properties.put(CellUtil.LEFT_BORDER_COLOR, index);
 		properties.put(CellUtil.RIGHT_BORDER_COLOR, index);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 线框颜色
 	 */
-	public CellStyleBuilder<P> setBorderColor(short color) {
+	public B setBorderColor(short color) {
 		properties.put(CellUtil.TOP_BORDER_COLOR, color);
 		properties.put(CellUtil.BOTTOM_BORDER_COLOR, color);
 		properties.put(CellUtil.LEFT_BORDER_COLOR, color);
 		properties.put(CellUtil.RIGHT_BORDER_COLOR, color);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 上边线框颜色
 	 */
-	public CellStyleBuilder<P> setTopBorderColor(IndexedColors color) {
+	public B setTopBorderColor(IndexedColors color) {
 		properties.put(CellUtil.TOP_BORDER_COLOR, color.getIndex());
-		return this;
+		return self();
 	}
 
 	/**
 	 * 上边线框颜色
 	 */
-	public CellStyleBuilder<P> setTopBorderColor(short color) {
+	public B setTopBorderColor(short color) {
 		properties.put(CellUtil.TOP_BORDER_COLOR, color);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 左边线框颜色
 	 */
-	public CellStyleBuilder<P> setLeftBorderColor(IndexedColors color) {
+	public B setLeftBorderColor(IndexedColors color) {
 		properties.put(CellUtil.LEFT_BORDER_COLOR, color.getIndex());
-		return this;
+		return self();
 	}
 
 	/**
 	 * 左边线框颜色
 	 */
-	public CellStyleBuilder<P> setLeftBorderColor(short color) {
+	public B setLeftBorderColor(short color) {
 		properties.put(CellUtil.LEFT_BORDER_COLOR, color);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 下边线框颜色
 	 */
-	public CellStyleBuilder<P> setBottomBorderColor(IndexedColors color) {
+	public B setBottomBorderColor(IndexedColors color) {
 		properties.put(CellUtil.BOTTOM_BORDER_COLOR, color.getIndex());
-		return this;
+		return self();
 	}
 
 	/**
 	 * 下边线框颜色
 	 */
-	public CellStyleBuilder<P> setBottomBorderColor(short color) {
+	public B setBottomBorderColor(short color) {
 		properties.put(CellUtil.BOTTOM_BORDER_COLOR, color);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 右边线框颜色
 	 */
-	public CellStyleBuilder<P> setRightBorderColor(IndexedColors color) {
+	public B setRightBorderColor(IndexedColors color) {
 		properties.put(CellUtil.RIGHT_BORDER_COLOR, color.getIndex());
-		return this;
+		return self();
 	}
 
 	/**
 	 * 右边线框颜色
 	 */
-	public CellStyleBuilder<P> setRightBorderColor(short color) {
+	public B setRightBorderColor(short color) {
 		properties.put(CellUtil.RIGHT_BORDER_COLOR, color);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 背景色
 	 */
-	public CellStyleBuilder<P> setFillBackgroundColor(IndexedColors color) {
+	public B setFillBackgroundColor(IndexedColors color) {
 		properties.put(CellUtil.FILL_BACKGROUND_COLOR, color.getIndex());
-		return this;
+		return self();
 	}
 
 	/**
 	 * 背景色
 	 */
-	public CellStyleBuilder<P> setFillBackgroundColor(short color) {
+	public B setFillBackgroundColor(short color) {
 		properties.put(CellUtil.FILL_BACKGROUND_COLOR, color);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 前景色
 	 */
-	public CellStyleBuilder<P> setFillForegroundColor(IndexedColors color) {
+	public B setFillForegroundColor(IndexedColors color) {
 		properties.put(CellUtil.FILL_FOREGROUND_COLOR, color.getIndex());
-		return this;
+		return self();
 	}
 
 	/**
 	 * 前景色
 	 */
-	public CellStyleBuilder<P> setFillForegroundColor(short color) {
+	public B setFillForegroundColor(short color) {
 		properties.put(CellUtil.FILL_FOREGROUND_COLOR, color);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 填充类型
 	 */
-	public CellStyleBuilder<P> setFillPattern(FillPatternType fp) {
+	public B setFillPattern(FillPatternType fp) {
 		properties.put(CellUtil.FILL_PATTERN, fp);
-		return this;
+		return self();
 	}
 
 	/**
 	 * 格式化
 	 */
-	public CellStyleBuilder<P> setDataFormat(String pFmt) {
-		properties.put(CellUtil.DATA_FORMAT, parent.createDataFormat().getFormat(pFmt));
-		return this;
+	public B setDataFormat(String pFmt) {
+		properties.put(CellUtil.DATA_FORMAT, parent.workbook.createDataFormat().getFormat(pFmt));
+		return self();
 	}
 
-	/**
-	 * 添加样式
-	 */
-	public P addCellStyle() {
-		if (predicate != null) {
+	@SuppressWarnings("unchecked")
+	protected B self() {
+		return (B) this;
+	}
+
+	public Workbook build() {
+		return end().build();
+	}
+
+	public P end() {
+		if (properties.isEmpty()) {
+			return parent;
+		}
+		if (region != null) {
+			parent.addCellStyle(predicate, properties);
+			parent.addRegionStyle(region, properties);
+		} else if (predicate != null) {
 			parent.addCellStyle(predicate, properties);
 		} else if (column != null) {
 			parent.addColumnStyle(column, properties);
@@ -372,4 +397,11 @@ public class CellStyleBuilder<P extends CellBuilder<P>> {
 		return parent;
 	}
 
+	/**
+	 * @deprecated use {@link CellStyleBuilder#end()} instead.
+	 */
+	@Deprecated
+	public P addCellStyle() {
+		return end();
+	}
 }

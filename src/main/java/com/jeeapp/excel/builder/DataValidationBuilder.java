@@ -1,30 +1,24 @@
 package com.jeeapp.excel.builder;
 
-import java.util.Arrays;
-
-import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.DataValidation;
 import org.apache.poi.ss.usermodel.DataValidation.ErrorStyle;
 import org.apache.poi.ss.usermodel.DataValidationConstraint;
-import org.apache.poi.ss.usermodel.DataValidationConstraint.OperatorType;
 import org.apache.poi.ss.usermodel.DataValidationConstraint.ValidationType;
 import org.apache.poi.ss.usermodel.DataValidationHelper;
 import org.apache.poi.ss.util.CellRangeAddressList;
-import org.springframework.util.Assert;
 
 /**
  * @author Justice
  * @since 0.0.2
  */
-public class DataValidationBuilder {
+@SuppressWarnings("unchecked")
+public class DataValidationBuilder<B extends DataValidationBuilder<B>> extends CellStyleBuilder<B, SheetBuilder> {
 
 	private final SheetBuilder parent;
 
 	private final DataValidationHelper dataValidationHelper;
 
 	private DataValidationConstraint constraint;
-
-	private CellRangeAddressList regions;
 
 	private int validationType;
 
@@ -42,6 +36,8 @@ public class DataValidationBuilder {
 
 	private boolean showErrorBox = false;
 
+	private boolean suppress = true;
+
 	private int errorStyle = ErrorStyle.WARNING;
 
 	private String errorBoxTitle;
@@ -52,12 +48,13 @@ public class DataValidationBuilder {
 
 	private String promptBoxText;
 
-	public DataValidationBuilder(SheetBuilder parent) {
+	public DataValidationBuilder(SheetBuilder parent, int firstRow, int lastRow, int firstCol, int lastCol) {
+		super(parent, firstRow, lastRow, firstCol, lastCol);
 		this.parent = parent;
 		this.dataValidationHelper = parent.sheet.getDataValidationHelper();
 	}
 
-	protected DataValidationBuilder createConstraint(int validationType, int operatorType, String firstFormula,
+	protected B createConstraint(int validationType, int operatorType, String firstFormula,
 		String secondFormula, String[] explicitListValues, String dateFormat) {
 		this.validationType = validationType;
 		this.operatorType = operatorType;
@@ -89,189 +86,133 @@ public class DataValidationBuilder {
 		if (validationType == ValidationType.TEXT_LENGTH) {
 			this.constraint = dataValidationHelper.createTextLengthConstraint(operatorType, firstFormula, secondFormula);
 		}
-		return this;
+		return self();
 	}
 
-	public DataValidationBuilder createExplicitListConstraint(String... explicitListValues) {
+	public B createExplicitListConstraint(String... explicitListValues) {
 		this.validationType = ValidationType.LIST;
 		this.explicitListValues = explicitListValues;
 		constraint = dataValidationHelper.createExplicitListConstraint(explicitListValues);
-		return this;
+		return self();
 	}
 
-	public DataValidationBuilder createFormulaListConstraint(String firstFormula) {
+	public B createFormulaListConstraint(String firstFormula) {
 		this.validationType = ValidationType.LIST;
 		this.firstFormula = firstFormula;
 		constraint = dataValidationHelper.createFormulaListConstraint(firstFormula);
-		return this;
+		return self();
 	}
 
-	public DataValidationBuilder createTimeConstraint(String firstFormula) {
+	public B createTimeConstraint(String firstFormula) {
 		this.validationType = ValidationType.TIME;
 		this.firstFormula = firstFormula;
 		constraint = dataValidationHelper.createFormulaListConstraint(firstFormula);
-		return this;
+		return self();
 	}
 
-	public DataValidationBuilder createDateConstraint(int operatorType, String firstFormula, String secondFormula, String dateFormat) {
+	public B createDateConstraint(int operatorType, String firstFormula, String secondFormula, String dateFormat) {
 		this.validationType = ValidationType.DATE;
 		this.operatorType = operatorType;
 		this.firstFormula = firstFormula;
 		this.secondFormula = secondFormula;
 		constraint = dataValidationHelper.createDateConstraint(operatorType, firstFormula, secondFormula, dateFormat);
-		return this;
+		return self();
 	}
 
-	public DataValidationBuilder createCustomConstraint(String firstFormula) {
+	public B createCustomConstraint(String firstFormula) {
 		this.validationType = ValidationType.FORMULA;
 		this.firstFormula = firstFormula;
 		constraint = dataValidationHelper.createCustomConstraint(firstFormula);
-		return this;
+		return self();
 	}
 
-	public DataValidationBuilder createIntegerConstraint(int operatorType, String firstFormula, String secondFormula) {
+	public B createIntegerConstraint(int operatorType, String firstFormula, String secondFormula) {
 		this.validationType = ValidationType.INTEGER;
 		this.operatorType = operatorType;
 		this.firstFormula = firstFormula;
 		this.secondFormula = secondFormula;
 		constraint = dataValidationHelper.createIntegerConstraint(operatorType, firstFormula, secondFormula);
-		return this;
+		return self();
 	}
 
-	public DataValidationBuilder createDecimalConstraint(int operatorType, String firstFormula, String secondFormula) {
+	public B createDecimalConstraint(int operatorType, String firstFormula, String secondFormula) {
 		this.validationType = ValidationType.DECIMAL;
 		this.operatorType = operatorType;
 		this.firstFormula = firstFormula;
 		this.secondFormula = secondFormula;
 		constraint = dataValidationHelper.createDecimalConstraint(operatorType, firstFormula, secondFormula);
-		return this;
+		return self();
 	}
 
-	public DataValidationBuilder createTextLengthConstraint(int operatorType, String firstFormula, String secondFormula) {
+	public B createTextLengthConstraint(int operatorType, String firstFormula, String secondFormula) {
 		this.validationType = ValidationType.TEXT_LENGTH;
 		this.operatorType = operatorType;
 		this.firstFormula = firstFormula;
 		this.secondFormula = secondFormula;
 		constraint = dataValidationHelper.createTextLengthConstraint(operatorType, firstFormula, secondFormula);
-		return this;
+		return self();
 	}
 
-	public DataValidationBuilder setRegions(int firstRow, int lastRow, int firstCol, int lastCol) {
-		this.regions = new CellRangeAddressList(firstRow, lastRow, firstCol, lastCol);
-		return this;
-	}
-
-	public DataValidationBuilder allowedEmptyCell(boolean allowedEmptyCell) {
+	public B allowedEmptyCell(boolean allowedEmptyCell) {
 		this.allowedEmptyCell = allowedEmptyCell;
-		return this;
+		return self();
 	}
 
-	public DataValidationBuilder setErrorStyle(int errorStyle) {
+	public B setErrorStyle(int errorStyle) {
 		this.errorStyle = errorStyle;
-		return this;
+		return self();
 	}
 
-	public DataValidationBuilder showErrorBox(String errorBoxTitle, String errorBoxText) {
-		this.showErrorBox = true;
-		this.errorBoxTitle = errorBoxTitle;
-		this.errorBoxText = errorBoxText;
-		return this;
+	public B setSuppressDropDownArrow(boolean suppress) {
+		this.suppress = suppress;
+		return self();
 	}
 
-	public DataValidationBuilder showPromptBox(String promptBoxTitle, String promptBoxText) {
-		this.showPromptBox = true;
-		this.promptBoxTitle = promptBoxTitle;
-		this.promptBoxText = promptBoxText;
-		return this;
+	public B showErrorBox(String errorBoxTitle, String errorBoxText) {
+		showErrorBox(true, errorBoxTitle, errorBoxText);
+		return self();
 	}
 
-	protected DataValidationBuilder showErrorBox(boolean showErrorBox, String errorBoxTitle, String errorBoxText) {
+	public B showPromptBox(String promptBoxTitle, String promptBoxText) {
+		showPromptBox(true, promptBoxTitle, promptBoxText);
+		return self();
+	}
+
+	protected B showErrorBox(boolean showErrorBox, String errorBoxTitle, String errorBoxText) {
 		this.showErrorBox = showErrorBox;
 		this.errorBoxTitle = errorBoxTitle;
 		this.errorBoxText = errorBoxText;
-		return this;
+		return self();
 	}
 
-	protected DataValidationBuilder showPromptBox(boolean showPromptBox, String promptBoxTitle, String promptBoxText) {
+	protected B showPromptBox(boolean showPromptBox, String promptBoxTitle, String promptBoxText) {
 		this.showPromptBox = showPromptBox;
 		this.promptBoxTitle = promptBoxTitle;
 		this.promptBoxText = promptBoxText;
-		return this;
+		return self();
 	}
 
-	public DataValidationBuilder createValidation() {
-		this.addValidationData();
-		return parent.createValidation();
+	@Override
+	@SuppressWarnings("unchecked")
+	protected B self() {
+		return (B) this;
 	}
 
-	public SheetBuilder addValidationData() {
-		Assert.notNull(constraint, "Constraint must not be null!");
-		DataValidation validation = dataValidationHelper.createValidation(constraint, regions);
-		validation.setEmptyCellAllowed(allowedEmptyCell);
-		validation.setErrorStyle(errorStyle);
-		validation.setShowErrorBox(showErrorBox);
-		if (showErrorBox) {
-			if (StringUtils.isBlank(errorBoxText)) {
-				errorBoxText = createDefaultText(true);
-			}
+	@Override
+	public SheetBuilder end() {
+		if (constraint != null) {
+			CellRangeAddressList regions = new CellRangeAddressList();
+			regions.addCellRangeAddress(region);
+			DataValidation validation = dataValidationHelper.createValidation(constraint, regions);
+			validation.setEmptyCellAllowed(allowedEmptyCell);
+			validation.setSuppressDropDownArrow(suppress);
+			validation.setErrorStyle(errorStyle);
+			validation.setShowErrorBox(showErrorBox);
+			validation.setShowPromptBox(showPromptBox);
 			validation.createErrorBox(errorBoxTitle, errorBoxText);
-		}
-		validation.setShowPromptBox(showPromptBox);
-		if (showPromptBox) {
-			if (StringUtils.isBlank(promptBoxText)) {
-				promptBoxText = createDefaultText(false);
-			}
 			validation.createPromptBox(promptBoxTitle, promptBoxText);
+			parent.sheet.addValidationData(validation);
 		}
-		parent.sheet.addValidationData(validation);
-		return parent;
-	}
-
-	protected String createDefaultText(boolean error) {
-		String type = "";
-		if (validationType == ValidationType.LIST) {
-			if (explicitListValues != null) {
-				return String.format("必须是%s其中之一", Arrays.toString(explicitListValues));
-			} else {
-				return String.format("必须符合验证规则：%s!", firstFormula);
-			}
-		}
-		if (validationType == ValidationType.TIME) {
-			type = "时间";
-		}
-		if (validationType == ValidationType.DATE) {
-			type = "日期";
-		}
-		if (validationType == ValidationType.FORMULA) {
-			return String.format("必须符合验证规则：%s!", firstFormula);
-		}
-		if (validationType == ValidationType.TEXT_LENGTH) {
-			type = "长度";
-		}
-		if (operatorType == OperatorType.BETWEEN) {
-			return String.format("%s必须在%s和%s之间!", type, firstFormula, secondFormula);
-		}
-		if (operatorType == OperatorType.NOT_BETWEEN) {
-			return String.format("%s不能在%s和%s之间!", type, firstFormula, secondFormula);
-		}
-		if (operatorType == OperatorType.EQUAL) {
-			return String.format("%s必须等于%s!", type, firstFormula);
-		}
-		if (operatorType == OperatorType.NOT_EQUAL) {
-			return String.format("%s不能等于%s!", type, firstFormula);
-		}
-		if (operatorType == OperatorType.GREATER_THAN) {
-			return String.format("%s必须大于%s!", type, firstFormula);
-		}
-		if (operatorType == OperatorType.LESS_THAN) {
-			return String.format("%s必须小于%s!", type, firstFormula);
-		}
-		if (operatorType == OperatorType.GREATER_OR_EQUAL) {
-			return String.format("%s必须大于或等于%s!", type, firstFormula);
-		}
-		if (operatorType == OperatorType.LESS_OR_EQUAL) {
-			return String.format("%s必须小于或等于%s!", type, firstFormula);
-		}
-		return error ? "数据验证不通过!" : "";
+		return super.end();
 	}
 }

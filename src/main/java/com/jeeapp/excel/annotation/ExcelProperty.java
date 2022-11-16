@@ -63,7 +63,7 @@ public @interface ExcelProperty {
 		 * 设置要用于单元格边框的边框类型
 		 * @see BorderStyle#THIN
 		 */
-		BorderStyle border() default BorderStyle.NONE;
+		BorderStyle border() default BorderStyle.THIN;
 
 		/**
 		 * 设置要用于边框的颜色

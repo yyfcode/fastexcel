@@ -1,107 +1,51 @@
 package com.jeeapp.excel.builder;
 
-import org.apache.poi.ss.usermodel.BorderStyle;
-import org.apache.poi.ss.usermodel.IndexedColors;
-import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.ss.util.RegionUtil;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.util.CellAddress;
+import org.apache.poi.ss.util.SheetUtil;
 
 /**
  * @author justice
  */
-public class CellRangeBuilder {
+public class CellRangeBuilder extends PictureBuilder<CellRangeBuilder> {
 
 	private final SheetBuilder parent;
 
-	private final CellRangeAddress region;
-
-	public CellRangeBuilder(SheetBuilder parent, CellRangeAddress region) {
+	public CellRangeBuilder(SheetBuilder parent, int firstRow, int lastRow, int firstCol, int lastCol) {
+		super(parent, firstRow, lastRow, firstCol, lastCol);
 		this.parent = parent;
-		this.region = region;
 	}
 
-	public CellRangeBuilder setBorder(BorderStyle border) {
-		RegionUtil.setBorderLeft(border, region, parent.sheet);
-		RegionUtil.setBorderBottom(border, region, parent.sheet);
-		RegionUtil.setBorderRight(border, region, parent.sheet);
-		RegionUtil.setBorderTop(border, region, parent.sheet);
-		return this;
-	}
-
-	public CellRangeBuilder setBorderColor(int color) {
-		RegionUtil.setLeftBorderColor(color, region, parent.sheet);
-		RegionUtil.setBottomBorderColor(color, region, parent.sheet);
-		RegionUtil.setRightBorderColor(color, region, parent.sheet);
-		RegionUtil.setTopBorderColor(color, region, parent.sheet);
-		return this;
-	}
-
-	public CellRangeBuilder setBorderLeft(BorderStyle border) {
-		RegionUtil.setBorderLeft(border, region, parent.sheet);
-		return this;
-	}
-
-	public CellRangeBuilder setBorderBottom(BorderStyle border) {
-		RegionUtil.setBorderBottom(border, region, parent.sheet);
-		return this;
-	}
-
-	public CellRangeBuilder setBorderRight(BorderStyle border) {
-		RegionUtil.setBorderRight(border, region, parent.sheet);
-		return this;
-	}
-
-	public CellRangeBuilder setBorderTop(BorderStyle border) {
-		RegionUtil.setBorderTop(border, region, parent.sheet);
-		return this;
-	}
-
-	public CellRangeBuilder setLeftBorderColor(int color) {
-		RegionUtil.setLeftBorderColor(color, region, parent.sheet);
-		return this;
-	}
-
-	public CellRangeBuilder setBottomBorderColor(int color) {
-		RegionUtil.setBottomBorderColor(color, region, parent.sheet);
-		return this;
-	}
-
-	public CellRangeBuilder setRightBorderColor(int color) {
-		RegionUtil.setRightBorderColor(color, region, parent.sheet);
-		return this;
-	}
-
-	public CellRangeBuilder setTopBorderColor(int color) {
-		RegionUtil.setTopBorderColor(color, region, parent.sheet);
-		return this;
-	}
-
-	public CellRangeBuilder setLeftBorderColor(IndexedColors color) {
-		RegionUtil.setLeftBorderColor(color.getIndex(), region, parent.sheet);
-		return this;
-	}
-
-	public CellRangeBuilder setBottomBorderColor(IndexedColors color) {
-		RegionUtil.setBottomBorderColor(color.getIndex(), region, parent.sheet);
-		return this;
-	}
-
-	public CellRangeBuilder setRightBorderColor(IndexedColors color) {
-		RegionUtil.setRightBorderColor(color.getIndex(), region, parent.sheet);
-		return this;
-	}
-
-	public CellRangeBuilder setTopBorderColor(IndexedColors color) {
-		RegionUtil.setTopBorderColor(color.getIndex(), region, parent.sheet);
-		return this;
-	}
-
+	/**
+	 * @deprecated use {@link CellBuilder#setCellValue(Object)} instead.
+	 */
+	@Deprecated
 	public CellRangeBuilder setCellValue(Object value) {
 		parent.createCell(region.getFirstRow(), region.getFirstColumn(), value);
 		return this;
 	}
 
+	public SheetBuilder fillUndefinedCells() {
+		for (CellAddress cellAddress : region) {
+			Cell cell = SheetUtil.getCellWithMerges(parent.sheet, cellAddress.getRow(), cellAddress.getColumn());
+			if (cell == null) {
+				parent.createCell(cellAddress);
+			}
+		}
+		return end();
+	}
+
+	public CellBuilder addMergedRegion() {
+		parent.sheet.addMergedRegion(region);
+		return end().matchingCell(new CellAddress(region.getFirstRow(), region.getFirstColumn()));
+	}
+
+	public CellRangeBuilder matchingRegion(int firstRow, int lastRow, int firstCol, int lastCol) {
+		return end().matchingRegion(firstRow, lastRow, firstCol, lastCol);
+	}
+
 	/**
-	 * @deprecated use {@link CellRangeBuilder#createCellComment(String)} instead.
+	 * @deprecated use {@link CellBuilder#setCommentText(String)} instead.
 	 */
 	@Deprecated
 	public CellRangeBuilder setCellComment(String comment, String author, int row2, int col2) {
@@ -109,33 +53,19 @@ public class CellRangeBuilder {
 		return this;
 	}
 
-	public PictureBuilder<CellRangeBuilder> createPicture(byte[] pictureData, int format) {
-		int pictureIndex = parent.sheet.getWorkbook().addPicture(pictureData, format);
-		return new PictureBuilder<>(this, parent.sheet, pictureIndex)
-			.setRow1(region.getFirstRow())
-			.setCol1(region.getFirstColumn())
-			.setRow2(region.getLastRow() + 1)
-			.setCol2(region.getLastColumn() + 1);
-	}
-
-	public CellCommentBuilder<CellRangeBuilder> createCellComment(String comment) {
-		return new CellCommentBuilder<>(this, parent.sheet, comment)
-			.setRow1(region.getFirstRow())
-			.setCol1(region.getFirstColumn());
-	}
-
+	/**
+	 * @deprecated use {@link CellRangeBuilder#matchingRegion(int, int, int, int)} instead.
+	 */
+	@Deprecated
 	public CellRangeBuilder addCellRange(int firstRow, int lastRow, int firstCol, int lastCol) {
-		this.merge();
-		return parent.addCellRange(firstRow, lastRow, firstCol, lastCol);
+		return end().matchingRegion(firstRow, lastRow, firstCol, lastCol);
 	}
 
+	/**
+	 * @deprecated use {@link CellRangeBuilder#addMergedRegion()} instead.
+	 */
+	@Deprecated
 	public SheetBuilder merge() {
-		parent.sheet.addMergedRegion(region);
-		return parent;
-	}
-
-	public SheetBuilder unsafeMerge() {
-		parent.sheet.addMergedRegionUnsafe(region);
-		return parent;
+		return addMergedRegion().end();
 	}
 }
