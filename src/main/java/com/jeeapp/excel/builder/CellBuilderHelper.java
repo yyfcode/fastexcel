@@ -96,7 +96,7 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 			setColumnStyle(sheet, column);
 		}
 		for (Row row : sheet) {
-			if(sheet.getDefaultRowHeightInPoints() == row.getHeightInPoints()){
+			if (sheet.getDefaultRowHeightInPoints() == row.getHeightInPoints()) {
 				row.setHeightInPoints(properties.height);
 			}
 			for (Cell cell : row) {
@@ -200,6 +200,10 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 		} else {
 			this.properties.regionStyles.put(region, properties);
 		}
+		this.addCellStyle(cell -> cell.getColumnIndex() >= region.getFirstColumn()
+			&& cell.getColumnIndex() <= region.getLastColumn()
+			&& cell.getRowIndex() >= region.getFirstRow()
+			&& cell.getRowIndex() <= region.getLastRow(), properties);
 	}
 
 	@Getter

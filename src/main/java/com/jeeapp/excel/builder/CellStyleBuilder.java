@@ -50,10 +50,6 @@ public class CellStyleBuilder<B extends CellStyleBuilder<B, P>, P extends CellBu
 	protected CellStyleBuilder(P parent, int firstRow, int lastRow, int firstCol, int lastCol) {
 		this.parent = parent;
 		this.region = new CellRangeAddress(firstRow, lastRow, firstCol, lastCol);
-		this.predicate = cell -> cell.getColumnIndex() >= region.getFirstColumn()
-			&& cell.getColumnIndex() <= region.getLastColumn()
-			&& cell.getRowIndex() >= region.getFirstRow()
-			&& cell.getRowIndex() <= region.getLastRow();
 		this.properties = new HashMap<>();
 	}
 
@@ -385,7 +381,6 @@ public class CellStyleBuilder<B extends CellStyleBuilder<B, P>, P extends CellBu
 			return parent;
 		}
 		if (region != null) {
-			parent.addCellStyle(predicate, properties);
 			parent.addRegionStyle(region, properties);
 		} else if (predicate != null) {
 			parent.addCellStyle(predicate, properties);
