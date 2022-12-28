@@ -33,6 +33,7 @@ public class CellRangeBuilder<P extends RowBuilderHelper<P>> extends DataValidat
 	public CellBuilder<P> addMergedRegion() {
 		parent.createCell(lastRow, lastCol, null);
 		parent.sheet.addMergedRegion(new CellRangeAddress(firstRow, lastRow, firstCol, lastCol));
+		end();
 		return parent.matchingCell(new CellAddress(firstRow, firstCol));
 	}
 
