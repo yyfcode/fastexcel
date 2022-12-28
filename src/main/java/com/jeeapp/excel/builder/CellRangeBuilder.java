@@ -1,32 +1,54 @@
 package com.jeeapp.excel.builder;
 
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.ss.util.CellAddress;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.SheetUtil;
 
 /**
  * @author justice
  */
-public class CellRangeBuilder extends PictureBuilder<CellRangeBuilder> {
+public class CellRangeBuilder<P extends RowBuilderHelper<P>> extends DataValidationBuilder<CellRangeBuilder<P>, P> {
 
-	private final SheetBuilder parent;
+	private final P parent;
 
-	public CellRangeBuilder(SheetBuilder parent, int firstRow, int lastRow, int firstCol, int lastCol) {
+	private final int firstRow;
+
+	private final int lastRow;
+
+	private final int firstCol;
+
+	private final int lastCol;
+
+	protected CellRangeBuilder(P parent, int firstRow, int lastRow, int firstCol, int lastCol) {
 		super(parent, firstRow, lastRow, firstCol, lastCol);
+		this.firstRow = firstRow;
+		this.lastRow = lastRow;
+		this.firstCol = firstCol;
+		this.lastCol = lastCol;
 		this.parent = parent;
 	}
 
-	/**
-	 * @deprecated use {@link CellBuilder#setCellValue(Object)} instead.
-	 */
-	@Deprecated
-	public CellRangeBuilder setCellValue(Object value) {
-		parent.createCell(region.getFirstRow(), region.getFirstColumn(), value);
+	public CellBuilder<P> addMergedRegion() {
+		parent.createCell(lastRow, lastCol, null);
+		parent.sheet.addMergedRegion(new CellRangeAddress(firstRow, lastRow, firstCol, lastCol));
+		return parent.matchingCell(new CellAddress(firstRow, firstCol));
+	}
+
+	public CellRangeBuilder<P> addPicture(byte[] pictureData, int format) {
+		ClientAnchor clientAnchor = creationHelper.createClientAnchor();
+		clientAnchor.setRow1(firstRow);
+		clientAnchor.setCol1(firstCol);
+		clientAnchor.setRow2(lastRow + 1);
+		clientAnchor.setCol2(lastCol + 1);
+		int pictureIndex = parent.workbook.addPicture(pictureData, format);
+		parent.sheet.getDrawingPatriarch().createPicture(clientAnchor, pictureIndex);
 		return this;
 	}
 
-	public SheetBuilder fillUndefinedCells() {
-		for (CellAddress cellAddress : region) {
+	public P fillUndefinedCells() {
+		for (CellAddress cellAddress : new CellRangeAddress(firstRow, lastRow, firstCol, lastCol)) {
 			Cell cell = SheetUtil.getCellWithMerges(parent.sheet, cellAddress.getRow(), cellAddress.getColumn());
 			if (cell == null) {
 				parent.createCell(cellAddress);
@@ -35,37 +57,36 @@ public class CellRangeBuilder extends PictureBuilder<CellRangeBuilder> {
 		return end();
 	}
 
-	public CellBuilder addMergedRegion() {
-		parent.sheet.addMergedRegion(region);
-		return end().matchingCell(new CellAddress(region.getFirstRow(), region.getFirstColumn()));
-	}
-
-	public CellRangeBuilder matchingRegion(int firstRow, int lastRow, int firstCol, int lastCol) {
-		return end().matchingRegion(firstRow, lastRow, firstCol, lastCol);
+	/**
+	 * @deprecated use {@link CellBuilder#setCellValue(Object)} instead.
+	 */
+	public CellRangeBuilder<P> setCellValue(Object value) {
+		parent.createCell(firstRow, firstCol, value);
+		return this;
 	}
 
 	/**
 	 * @deprecated use {@link CellBuilder#setCommentText(String)} instead.
 	 */
 	@Deprecated
-	public CellRangeBuilder setCellComment(String comment, String author, int row2, int col2) {
-		parent.createCellComment(comment, author, region.getFirstRow(), region.getFirstColumn(), row2, col2);
+	public CellRangeBuilder<P> setCellComment(String comment, String author, int row2, int col2) {
+		parent.createCellComment(comment, author, firstRow, firstCol, row2, col2);
 		return this;
 	}
 
 	/**
-	 * @deprecated use {@link CellRangeBuilder#matchingRegion(int, int, int, int)} instead.
+	 * @deprecated use {@link RowBuilderHelper#matchingRegion(int, int, int, int)} instead.
 	 */
 	@Deprecated
-	public CellRangeBuilder addCellRange(int firstRow, int lastRow, int firstCol, int lastCol) {
-		return end().matchingRegion(firstRow, lastRow, firstCol, lastCol);
+	public CellRangeBuilder<P> addCellRange(int firstRow, int lastRow, int firstCol, int lastCol) {
+		return parent.matchingRegion(firstRow, lastRow, firstCol, lastCol);
 	}
 
 	/**
 	 * @deprecated use {@link CellRangeBuilder#addMergedRegion()} instead.
 	 */
 	@Deprecated
-	public SheetBuilder merge() {
+	public P merge() {
 		return addMergedRegion().end();
 	}
 }

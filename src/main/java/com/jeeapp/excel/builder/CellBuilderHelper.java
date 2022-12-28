@@ -89,8 +89,6 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 		return self();
 	}
 
-	protected abstract B self();
-
 	protected B end(Sheet sheet) {
 		for (int column : properties.columnStyles.keySet()) {
 			setColumnStyle(sheet, column);
@@ -108,6 +106,8 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 		}
 		return self();
 	}
+
+	protected abstract B self();
 
 	public Workbook build() {
 		return workbook;

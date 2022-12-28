@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellAddress;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.PropertyAccessorFactory;
@@ -35,7 +36,7 @@ import com.jeeapp.excel.model.Column;
 /**
  * @author justice
  */
-public class RowBuilder<T> {
+public class RowBuilder<T> extends RowBuilderHelper<RowBuilder<T>> {
 
 	public static final Map<Class<?>, List<Field>> FIELDS_CACHE = new ConcurrentHashMap<>();
 
@@ -51,8 +52,8 @@ public class RowBuilder<T> {
 
 	private int thisCol = -1;
 
-	public RowBuilder(SheetBuilder parent, Class<T> type) {
-		Validate.notNull(type, "Type must not be null");
+	protected RowBuilder(SheetBuilder parent, Class<T> type) {
+		super(parent, parent.sheet);
 		this.parent = parent;
 		this.type = type;
 		this.properties = getProperties(null, type);
@@ -145,31 +146,8 @@ public class RowBuilder<T> {
 	}
 
 	/**
-	 * 创建空行
-	 */
-	public RowBuilder<T> createRow() {
-		parent.createRow();
-		return this;
-	}
-
-	/**
-	 * 创建单行
-	 */
-	public RowBuilder<T> createRow(Object... cells) {
-		parent.createRow(cells);
-		return this;
-	}
-
-	/**
-	 * 创建多行
-	 */
-	public RowBuilder<T> createRows(Object[][] rows) {
-		parent.createRows(rows);
-		return this;
-	}
-
-	/**
 	 * 当前行指定列创建批注
+	 * @deprecated use {@link SheetBuilder#matchingCell(CellAddress)} instead.
 	 */
 	@Deprecated
 	public RowBuilder<T> createCellComment(String comment, String author, int col1, int row2, int col2) {
@@ -206,12 +184,39 @@ public class RowBuilder<T> {
 		return this;
 	}
 
+	/**
+	 * 创建工作表
+	 */
+	public SheetBuilder createSheet() {
+		return parent.createSheet();
+	}
+
+	/**
+	 * 创建工作表
+	 */
+	public SheetBuilder createSheet(String sheetName) {
+		return parent.createSheet(sheetName);
+	}
+
 	public SheetBuilder end() {
 		return parent.end();
 	}
 
+	@Override
 	public Workbook build() {
 		return parent.build();
+	}
+
+	@Override
+	protected RowBuilder<T> self() {
+		return this;
+	}
+
+	/**
+	 * 行构建器
+	 */
+	public <B> RowBuilder<B> rowType(Class<B> type) {
+		return parent.rowType(type);
 	}
 
 	/**
@@ -225,15 +230,16 @@ public class RowBuilder<T> {
 	/**
 	 * 创建表头
 	 */
-	protected List<Column> resolveHeaders(Column column, Class<?> type) {
+	private List<Column> resolveHeaders(Column column, Class<?> type) {
 		List<Column> headers = new ArrayList<>();
-		for (Field field : getSortedFields(type)) {
+		for (Field field : getExcelFields(type)) {
 			Class<?> fieldType = field.getType();
 			String property = column == null ? field.getName() : column.getName() + "." + field.getName();
 			if (!matchesProperty(properties, property)) {
 				continue;
 			}
-			Column header = Column.of(property, field);
+			Column header = new Column(field);
+			header.setName(property);
 			// 根据嵌套属性中的点来获取开始行位置，每次递归都会创建一行
 			header.setFirstRow(StringUtils.countMatches(property, ".") + thisRow);
 			// 更新表头最后一行的位置，用于表头合并
@@ -264,7 +270,7 @@ public class RowBuilder<T> {
 	/**
 	 * 根据目标对象创建单元格
 	 */
-	protected List<Cell> resolveCells(T target) {
+	private List<Cell> resolveCells(T target) {
 		List<String> nestedPropertyPaths = new ArrayList<>();
 		Map<String, Integer> nestedPropertyPathRowCount = new HashMap<>();
 		List<Cell> cells = resolveCells(target, StringUtils.EMPTY, nestedPropertyPaths, nestedPropertyPathRowCount);
@@ -310,7 +316,7 @@ public class RowBuilder<T> {
 		Map<String, Integer> nestedPropertyPathRowCount) {
 		List<Cell> cells = new ArrayList<>();
 		BeanWrapper beanWrapper = PropertyAccessorFactory.forBeanPropertyAccess(target);
-		for (Field field : getSortedFields(beanWrapper.getWrappedClass())) {
+		for (Field field : getExcelFields(beanWrapper.getWrappedClass())) {
 			Class<?> propertyType = field.getType();
 			String propertyName = parentPropertyPath + field.getName();
 			String property = RegExUtils.removeAll(propertyName, "\\[(.*?)]");
@@ -340,7 +346,9 @@ public class RowBuilder<T> {
 					nestedPropertyPaths.add(StringUtils.substringBeforeLast(propertyPath, "."));
 					cells.addAll(resolveCells(propertyValue, propertyPath, nestedPropertyPaths, nestedPropertyPathRowCount));
 				} else if (column > -1) {
-					Cell cell = Cell.of(propertyName, propertyValue);
+					Cell cell = new Cell(field);
+					cell.setName(propertyName);
+					cell.setValue(propertyValue);
 					cell.setFirstCol(column);
 					cell.setLastCol(column);
 					cells.add(cell);
@@ -371,7 +379,7 @@ public class RowBuilder<T> {
 	 */
 	private static List<String> getProperties(String parentProperty, Class<?> type) {
 		List<String> properties = new ArrayList<>();
-		for (Field field : getSortedFields(type)) {
+		for (Field field : getExcelFields(type)) {
 			Class<?> fieldType = field.getType();
 			String property = parentProperty == null ? field.getName() : parentProperty + "." + field.getName();
 			if (!BeanUtils.isSimpleProperty(fieldType)) {
@@ -391,7 +399,7 @@ public class RowBuilder<T> {
 	/**
 	 * 获取字段
 	 */
-	private static List<Field> getSortedFields(Class<?> type) {
+	private static List<Field> getExcelFields(Class<?> type) {
 		return FIELDS_CACHE.computeIfAbsent(type, key -> FieldUtils.getAllFieldsList(type)
 			.stream()
 			.filter(field -> {

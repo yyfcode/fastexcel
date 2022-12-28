@@ -13,9 +13,10 @@ import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.util.Assert;
 import com.jeeapp.excel.annotation.ExcelProperty;
 import com.jeeapp.excel.annotation.ExcelProperty.Header;
-import com.jeeapp.excel.annotation.ExcelProperty.Validation;
+import com.jeeapp.excel.annotation.ExcelProperty.Comment;
 
 /**
  * @author Justice
@@ -32,47 +33,11 @@ public class Column extends Cell {
 
 	protected final static Integer DEFAULT_WIDTH = 10;
 
-	protected final static String DEFAULT_FORMAT = "General";
-
 	/*-------------------------------------------
-    |               列宽和格式化                  |
+    |               列宽                        |
     ============================================*/
 
 	private Integer width = DEFAULT_WIDTH;
-
-	private String format = DEFAULT_FORMAT;
-
-	/*-------------------------------------------
-    |               列数据验证                    |
-    ============================================*/
-
-	private int validationType;
-
-	private int operatorType;
-
-	private String firstFormula;
-
-	private String secondFormula;
-
-	private String[] explicitListValues;
-
-	private boolean allowEmpty;
-
-	private String dateFormat;
-
-	private int errorStyle;
-
-	private boolean showPromptBox;
-
-	private String promptBoxTitle;
-
-	private String promptBoxText;
-
-	private boolean showErrorBox;
-
-	private String errorBoxTitle;
-
-	private String errorBoxText;
 
 	/*-------------------------------------------
     |                表头属性                    |
@@ -100,50 +65,27 @@ public class Column extends Cell {
 
 	private Integer commentHeight;
 
-	protected Column(String name, Object value) {
-		super(name, value);
-	}
-
-	public static Column of(String name, Field field) {
-		Column column = new Column(name, StringUtils.capitalize(StringUtils.join(SPLIT_CAMEL_CASE.split(field.getName()), " ")));
+	public Column(Field field) {
+		super(field);
+		this.setValue(StringUtils.capitalize(StringUtils.join(SPLIT_CAMEL_CASE.split(field.getName()), " ")));
 		ExcelProperty property = AnnotationUtils.getAnnotation(field, ExcelProperty.class);
-		if (property == null) {
-			return column;
-		}
-		column.setValue(property.name());
-		column.setWidth(property.width());
-		column.setFormat(property.format());
-
-		// 数据验证
-		Validation validation = property.validation();
-		column.setValidationType(validation.validationType());
-		column.setOperatorType(validation.operatorType());
-		column.setFirstFormula(validation.firstFormula());
-		column.setSecondFormula(validation.secondFormula());
-		column.setExplicitListValues(validation.explicitListValues());
-		column.setDateFormat(validation.dateFormat());
-		column.setAllowEmpty(validation.allowEmpty());
-		column.setErrorStyle(validation.errorStyle());
-		column.setShowPromptBox(validation.showPromptBox());
-		column.setPromptBoxTitle(validation.promptBoxTitle());
-		column.setPromptBoxText(validation.promptBoxText());
-		column.setShowErrorBox(validation.showErrorBox());
-		column.setErrorBoxTitle(validation.errorBoxTitle());
-		column.setErrorBoxText(validation.errorBoxText());
-
-		// 表头
+		Assert.notNull(property, String.format("@ExcelProperty not found for %s", field));
+		// 标题和宽度
+		this.setValue(property.name());
+		this.setWidth(property.width());
+		// 表头样式
 		Header header = property.header();
-		column.setBorder(header.border());
-		column.setBorderColor(header.borderColor().getIndex());
-		column.setFillPatternType(header.fillPatternType());
-		column.setFillForegroundColor(header.fillForegroundColor().getIndex());
-		column.setFillBackgroundColor(header.fillBackgroundColor().getIndex());
-		column.setFontColor(header.fontColor().getIndex());
-		column.setComment(header.comment().value());
-		column.setCommentAuthor(header.comment().author());
-		column.setCommentWidth(header.comment().width());
-		column.setCommentHeight(header.comment().height());
-
-		return column;
+		this.setBorder(header.border());
+		this.setBorderColor(header.borderColor().getIndex());
+		this.setFillPatternType(header.fillPatternType());
+		this.setFillForegroundColor(header.fillForegroundColor().getIndex());
+		this.setFillBackgroundColor(header.fillBackgroundColor().getIndex());
+		this.setFontColor(header.fontColor().getIndex());
+		// 表头批注
+		Comment comment = header.comment();
+		this.setComment(comment.value());
+		this.setCommentAuthor(comment.author());
+		this.setCommentWidth(comment.width());
+		this.setCommentHeight(comment.height());
 	}
 }

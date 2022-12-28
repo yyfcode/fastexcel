@@ -10,7 +10,6 @@ import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
-import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellUtil;
 import com.jeeapp.excel.util.CellUtils;
@@ -28,7 +27,7 @@ public class CellStyleBuilder<B extends CellStyleBuilder<B, P>, P extends CellBu
 
 	private Integer column;
 
-	protected CellRangeAddress region;
+	private CellRangeAddress region;
 
 	protected CellStyleBuilder(P parent) {
 		this.parent = parent;
@@ -370,10 +369,6 @@ public class CellStyleBuilder<B extends CellStyleBuilder<B, P>, P extends CellBu
 	@SuppressWarnings("unchecked")
 	protected B self() {
 		return (B) this;
-	}
-
-	public Workbook build() {
-		return end().build();
 	}
 
 	public P end() {
