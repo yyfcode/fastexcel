@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -36,6 +37,7 @@ import com.jeeapp.excel.model.Column;
 /**
  * @author justice
  */
+@Slf4j
 public class RowBuilder<T> extends RowBuilderHelper<RowBuilder<T>> {
 
 	public static final Map<Class<?>, List<Field>> FIELDS_CACHE = new ConcurrentHashMap<>();
@@ -126,6 +128,7 @@ public class RowBuilder<T> extends RowBuilderHelper<RowBuilder<T>> {
 	}
 
 	public RowBuilder<T> createRow(T object) {
+		log.info(object.toString());
 		Validate.notNull(object, "object must be not null");
 		thisRow = parent.sheet.getLastRowNum() + 1;
 		lastRow = thisRow;
@@ -201,10 +204,9 @@ public class RowBuilder<T> extends RowBuilderHelper<RowBuilder<T>> {
 	}
 
 	public SheetBuilder end() {
-		return parent.end();
+		return parent;
 	}
 
-	@Override
 	public Workbook build() {
 		return parent.build();
 	}

@@ -61,6 +61,7 @@ public class CellRangeBuilder<P extends RowBuilderHelper<P>> extends DataValidat
 	/**
 	 * @deprecated use {@link CellBuilder#setCellValue(Object)} instead.
 	 */
+	@Deprecated
 	public CellRangeBuilder<P> setCellValue(Object value) {
 		parent.createCell(firstRow, firstCol, value);
 		return this;

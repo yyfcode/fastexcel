@@ -89,23 +89,21 @@ public class SheetBuilder extends RowBuilderHelper<SheetBuilder> {
 	 * 创建工作表
 	 */
 	public SheetBuilder createSheet() {
-		return end().parent.createSheet();
+		setSheetStyle(sheet);
+		return parent.createSheet();
 	}
 
 	/**
 	 * 创建工作表
 	 */
 	public SheetBuilder createSheet(String sheetName) {
-		return end().parent.createSheet(sheetName);
+		setSheetStyle(sheet);
+		return parent.createSheet(sheetName);
 	}
 
-	@Override
 	public Workbook build() {
-		return end().parent.build();
-	}
-
-	protected SheetBuilder end() {
-		return end(sheet);
+		setSheetStyle(sheet);
+		return parent.build();
 	}
 
 	@Override

@@ -69,6 +69,10 @@ public class WorkbookBuilder extends CellBuilderHelper<WorkbookBuilder> {
 		return new SheetBuilder(this, workbook.createSheet(WorkbookUtil.createSafeSheetName(sheetName)));
 	}
 
+	public Workbook build() {
+		return workbook;
+	}
+
 	@Override
 	protected WorkbookBuilder self() {
 		return this;

@@ -89,28 +89,27 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 		return self();
 	}
 
-	protected B end(Sheet sheet) {
+	protected abstract B self();
+
+	/**
+	 * 设置表样式
+	 */
+	protected void setSheetStyle(Sheet sheet) {
 		for (int column : properties.columnStyles.keySet()) {
 			setColumnStyle(sheet, column);
-		}
-		for (Row row : sheet) {
-			if (sheet.getDefaultRowHeightInPoints() == row.getHeightInPoints()) {
-				row.setHeightInPoints(properties.height);
-			}
-			for (Cell cell : row) {
-				setCellStyle(cell);
-			}
 		}
 		for (CellRangeAddress region : sheet.getMergedRegions()) {
 			setRegionStyle(sheet, region);
 		}
-		return self();
 	}
 
-	protected abstract B self();
-
-	public Workbook build() {
-		return workbook;
+	/**
+	 * 设置行样式
+	 */
+	protected void setRowStyle(Row row) {
+		if (row.getSheet().getDefaultRowHeightInPoints() == row.getHeightInPoints()) {
+			row.setHeightInPoints(properties.height);
+		}
 	}
 
 	/**
