@@ -21,6 +21,8 @@ public class CellRangeBuilder<P extends RowBuilderHelper<P>> extends DataValidat
 
 	private final int lastCol;
 
+	private Object value;
+
 	protected CellRangeBuilder(P parent, int firstRow, int lastRow, int firstCol, int lastCol) {
 		super(parent, firstRow, lastRow, firstCol, lastCol);
 		this.firstRow = firstRow;
@@ -33,7 +35,6 @@ public class CellRangeBuilder<P extends RowBuilderHelper<P>> extends DataValidat
 	public CellBuilder<P> addMergedRegion() {
 		parent.createCell(lastRow, lastCol, null);
 		parent.sheet.addMergedRegion(new CellRangeAddress(firstRow, lastRow, firstCol, lastCol));
-		end();
 		return parent.matchingCell(new CellAddress(firstRow, firstCol));
 	}
 
@@ -49,22 +50,14 @@ public class CellRangeBuilder<P extends RowBuilderHelper<P>> extends DataValidat
 	}
 
 	public P fillUndefinedCells() {
+		P parent = end();
 		for (CellAddress cellAddress : new CellRangeAddress(firstRow, lastRow, firstCol, lastCol)) {
 			Cell cell = SheetUtil.getCellWithMerges(parent.sheet, cellAddress.getRow(), cellAddress.getColumn());
 			if (cell == null) {
 				parent.createCell(cellAddress);
 			}
 		}
-		return end();
-	}
-
-	/**
-	 * @deprecated use {@link CellBuilder#setCellValue(Object)} instead.
-	 */
-	@Deprecated
-	public CellRangeBuilder<P> setCellValue(Object value) {
-		parent.createCell(firstRow, firstCol, value);
-		return this;
+		return parent;
 	}
 
 	/**

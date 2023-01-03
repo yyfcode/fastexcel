@@ -10,6 +10,7 @@ import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.util.CellAddress;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellUtil;
 import com.jeeapp.excel.util.CellUtils;
@@ -26,6 +27,8 @@ public class CellStyleBuilder<B extends CellStyleBuilder<B, P>, P extends CellBu
 	private Predicate<Cell> predicate;
 
 	private Integer column;
+
+	private CellAddress cell;
 
 	private CellRangeAddress region;
 
@@ -48,7 +51,11 @@ public class CellStyleBuilder<B extends CellStyleBuilder<B, P>, P extends CellBu
 
 	protected CellStyleBuilder(P parent, int firstRow, int lastRow, int firstCol, int lastCol) {
 		this.parent = parent;
-		this.region = new CellRangeAddress(firstRow, lastRow, firstCol, lastCol);
+		if (firstRow == lastRow && firstCol == lastCol) {
+			this.cell = new CellAddress(firstRow, firstCol);
+		} else {
+			this.region = new CellRangeAddress(firstRow, lastRow, firstCol, lastCol);
+		}
 		this.properties = new HashMap<>();
 	}
 
@@ -362,7 +369,9 @@ public class CellStyleBuilder<B extends CellStyleBuilder<B, P>, P extends CellBu
 	 * 格式化
 	 */
 	public B setDataFormat(String pFmt) {
-		properties.put(CellUtil.DATA_FORMAT, parent.workbook.createDataFormat().getFormat(pFmt));
+		if (!pFmt.equals(CellUtils.DEFAULT_FORMAT)) {
+			properties.put(CellUtil.DATA_FORMAT, parent.workbook.createDataFormat().getFormat(pFmt));
+		}
 		return self();
 	}
 
@@ -375,10 +384,12 @@ public class CellStyleBuilder<B extends CellStyleBuilder<B, P>, P extends CellBu
 		if (properties.isEmpty()) {
 			return parent;
 		}
-		if (region != null) {
+		if (cell != null) {
+			parent.addCellStyle(cell, properties);
+		} else if (region != null) {
 			parent.addRegionStyle(region, properties);
 		} else if (predicate != null) {
-			parent.addCellStyle(predicate, properties);
+			parent.addCustomStyle(predicate, properties);
 		} else if (column != null) {
 			parent.addColumnStyle(column, properties);
 		} else {

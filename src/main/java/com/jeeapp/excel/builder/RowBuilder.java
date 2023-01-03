@@ -128,7 +128,6 @@ public class RowBuilder<T> extends RowBuilderHelper<RowBuilder<T>> {
 	}
 
 	public RowBuilder<T> createRow(T object) {
-		log.info(object.toString());
 		Validate.notNull(object, "object must be not null");
 		thisRow = parent.sheet.getLastRowNum() + 1;
 		lastRow = thisRow;

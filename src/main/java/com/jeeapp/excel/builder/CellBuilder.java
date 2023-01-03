@@ -25,6 +25,8 @@ public class CellBuilder<P extends RowBuilderHelper<P>> extends DataValidationBu
 
 	private int height = 1;
 
+	private Object value;
+
 	protected CellBuilder(P parent, CellAddress cellAddress) {
 		super(parent, cellAddress.getRow(), cellAddress.getRow(), cellAddress.getColumn(), cellAddress.getColumn());
 		this.parent = parent;
@@ -64,7 +66,7 @@ public class CellBuilder<P extends RowBuilderHelper<P>> extends DataValidationBu
 	}
 
 	public CellBuilder<P> setCellValue(Object value) {
-		parent.createCell(cellAddress.getRow(), cellAddress.getColumn(), value);
+		this.value = value;
 		return this;
 	}
 
@@ -81,6 +83,6 @@ public class CellBuilder<P extends RowBuilderHelper<P>> extends DataValidationBu
 			cellComment.setString(string);
 			cellComment.setAuthor(author);
 		}
-		return super.end();
+		return super.end().createCell(cellAddress.getRow(), cellAddress.getColumn(), value);
 	}
 }

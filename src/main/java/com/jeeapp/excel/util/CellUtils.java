@@ -23,6 +23,7 @@ import org.apache.poi.ss.usermodel.FormulaError;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -37,6 +38,7 @@ import org.apache.poi.xssf.usermodel.XSSFCell;
 @Slf4j
 public class CellUtils {
 
+	public static final String DEFAULT_FORMAT = "General";
 	public static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
 	public static final String CHAR_SET = "charSet";
 	public static final String ITALIC = "italic";
@@ -48,22 +50,21 @@ public class CellUtils {
 	public static final String BOLD = "bold";
 	public static final String COLOR = "color";
 
-	private static final Set<String> stringValues = Collections.unmodifiableSet(
-		new HashSet<>(Collections.singletonList(
-			FONT_NAME
-		)));
-
-	private static final Set<String> byteValues = Collections.unmodifiableSet(
+	private static final Set<String> fontValues = Collections.unmodifiableSet(
 		new HashSet<>(Arrays.asList(
+			FONT_NAME,
 			UNDERLINE,
 			TYPE_OFFSET,
-			CHAR_SET
+			CHAR_SET,
+			FONT_HEIGHT,
+			COLOR,
+			ITALIC,
+			STRIKEOUT,
+			BOLD
 		)));
 
 	private static final Set<String> shortValues = Collections.unmodifiableSet(
 		new HashSet<>(Arrays.asList(
-			FONT_HEIGHT,
-			COLOR,
 			CellUtil.BOTTOM_BORDER_COLOR,
 			CellUtil.LEFT_BORDER_COLOR,
 			CellUtil.RIGHT_BORDER_COLOR,
@@ -76,15 +77,12 @@ public class CellUtils {
 		)));
 
 	private static final Set<String> intValues = Collections.unmodifiableSet(
-		new HashSet<>(Arrays.asList(
+		new HashSet<>(Collections.singletonList(
 			CellUtil.FONT
 		)));
 
 	private static final Set<String> booleanValues = Collections.unmodifiableSet(
 		new HashSet<>(Arrays.asList(
-			ITALIC,
-			STRIKEOUT,
-			BOLD,
 			CellUtil.LOCKED,
 			CellUtil.HIDDEN,
 			CellUtil.WRAP_TEXT
@@ -98,10 +96,11 @@ public class CellUtils {
 			CellUtil.BORDER_TOP
 		)));
 
-	private static CellStyle getNewStyle(CellStyle originalStyle, Workbook workbook, Map<String, Object> properties) {
+	private static CellStyle getStyle(CellStyle originalStyle, Workbook workbook, Map<String, Object> properties) {
 		CellStyle newStyle = null;
 		Map<String, Object> values = getFormatProperties(originalStyle);
-		putAll(properties, values);
+		properties.put(CellUtil.FONT, getFont(workbook, properties));
+		putStyleProperties(properties, values);
 
 		// index seems like what index the cellstyle is in the list of styles for a workbook.
 		// not good to compare on!
@@ -161,28 +160,25 @@ public class CellUtils {
 		}
 	}
 
-	public static void setRowStyleProperties(Sheet sheet, int row, Map<String, Object> properties) {
+	public static void setRowStyleProperties(Sheet sheet, Row row, Map<String, Object> properties) {
 		Workbook workbook = sheet.getWorkbook();
-		mergeFontProperties(workbook, properties);
-		CellStyle originalStyle = sheet.getRow(row).getRowStyle();
-		sheet.getRow(row).setRowStyle(getNewStyle(originalStyle, workbook, properties));
+		CellStyle originalStyle = row.getRowStyle();
+		row.setRowStyle(getStyle(originalStyle, workbook, properties));
 	}
 
 	public static void setCellStyleProperties(Cell cell, Map<String, Object> properties) {
 		Workbook workbook = cell.getSheet().getWorkbook();
-		mergeFontProperties(workbook, properties);
 		CellStyle originalStyle = cell.getCellStyle();
-		cell.setCellStyle(getNewStyle(originalStyle, workbook, properties));
+		cell.setCellStyle(getStyle(originalStyle, workbook, properties));
 	}
 
 	public static void setColumnStyleProperties(Sheet sheet, int column, Map<String, Object> properties) {
 		Workbook workbook = sheet.getWorkbook();
-		mergeFontProperties(workbook, properties);
 		CellStyle originalStyle = sheet.getColumnStyle(column);
-		sheet.setDefaultColumnStyle(column, getNewStyle(originalStyle, workbook, properties));
+		sheet.setDefaultColumnStyle(column, getStyle(originalStyle, workbook, properties));
 	}
 
-	private static void mergeFontProperties(Workbook workbook, Map<String, Object> properties) {
+	private static Integer getFont(Workbook workbook, Map<String, Object> properties) {
 		Font originalFont, newFont = null;
 		if (workbook.getNumberOfFonts() > 0) {
 			originalFont = workbook.getFontAt(0);
@@ -190,7 +186,7 @@ public class CellUtils {
 			originalFont = workbook.createFont();
 		}
 		Map<String, Object> values = getFontProperties(originalFont);
-		putAll(properties, values);
+		putFontProperties(properties, values);
 
 		int numberFonts = workbook.getNumberOfFonts();
 		for (int i = 0; i < numberFonts; i++) {
@@ -206,7 +202,7 @@ public class CellUtils {
 			newFont = workbook.createFont();
 			setFontProperties(newFont, values);
 		}
-		properties.put(CellUtil.FONT, newFont.getIndex());
+		return newFont.getIndex();
 	}
 
 	private static Map<String, Object> getFormatProperties(CellStyle style) {
@@ -295,13 +291,17 @@ public class CellUtils {
 		return properties;
 	}
 
-	private static void putAll(final Map<String, Object> src, Map<String, Object> dest) {
+	private static void putFontProperties(final Map<String, Object> src, Map<String, Object> dest) {
 		for (final String key : src.keySet()) {
-			if (stringValues.contains(key)) {
-				dest.put(key, getString(src, key));
-			} else if (byteValues.contains(key)) {
-				dest.put(key, getByte(src, key));
-			} else if (shortValues.contains(key)) {
+			if (fontValues.contains(key) && src.containsKey(key)) {
+				dest.put(key, src.get(key));
+			}
+		}
+	}
+
+	private static void putStyleProperties(final Map<String, Object> src, Map<String, Object> dest) {
+		for (final String key : src.keySet()) {
+			if (shortValues.contains(key)) {
 				dest.put(key, getShort(src, key));
 			} else if (intValues.contains(key)) {
 				dest.put(key, getInt(src, key));
@@ -315,6 +315,8 @@ public class CellUtils {
 				dest.put(key, getVerticalAlignment(src, key));
 			} else if (CellUtil.FILL_PATTERN.equals(key)) {
 				dest.put(key, getFillPattern(src, key));
+			} else {
+				log.debug("Ignoring unrecognized CellUtil format properties key: {}", key);
 			}
 		}
 	}

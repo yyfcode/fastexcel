@@ -1,5 +1,6 @@
 package com.jeeapp.excel.builder;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -10,6 +11,7 @@ import com.jeeapp.excel.util.CellUtils;
  * @author Justice
  * @since 0.0.2
  */
+@Slf4j
 abstract class RowBuilderHelper<B extends RowBuilderHelper<B>> extends CellBuilderHelper<B> {
 
 	protected final Sheet sheet;
@@ -35,7 +37,7 @@ abstract class RowBuilderHelper<B extends RowBuilderHelper<B>> extends CellBuild
 	 */
 	public B createRow() {
 		Row row = sheet.createRow(sheet.getLastRowNum() + 1);
-		setRowStyle(row);
+		setRowStyle(sheet, row);
 		return self();
 	}
 
@@ -68,7 +70,7 @@ abstract class RowBuilderHelper<B extends RowBuilderHelper<B>> extends CellBuild
 		Row row = sheet.getRow(lastRowNum);
 		if (row == null) {
 			row = sheet.createRow(lastRowNum);
-			setRowStyle(row);
+			setRowStyle(sheet, row);
 		}
 		int lastCellNum = row.getLastCellNum() == -1 ? 0 : row.getLastCellNum();
 		Cell cell = row.getCell(lastCellNum);
@@ -95,7 +97,7 @@ abstract class RowBuilderHelper<B extends RowBuilderHelper<B>> extends CellBuild
 		Row row = sheet.getRow(cellAddress.getRow());
 		if (row == null) {
 			row = sheet.createRow(cellAddress.getRow());
-			setRowStyle(row);
+			setRowStyle(sheet, row);
 		}
 		Cell cell = row.getCell(cellAddress.getColumn());
 		if (cell == null) {

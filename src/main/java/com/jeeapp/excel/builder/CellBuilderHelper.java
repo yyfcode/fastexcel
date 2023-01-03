@@ -11,6 +11,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellAddress;
 import org.apache.poi.ss.util.CellRangeAddress;
 import com.jeeapp.excel.util.CellUtils;
 
@@ -106,7 +107,7 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 	/**
 	 * 设置行样式
 	 */
-	protected void setRowStyle(Row row) {
+	protected void setRowStyle(Sheet sheet, Row row) {
 		if (row.getSheet().getDefaultRowHeightInPoints() == row.getHeightInPoints()) {
 			row.setHeightInPoints(properties.height);
 		}
@@ -128,9 +129,14 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 	 */
 	protected void setCellStyle(Cell cell) {
 		Map<String, Object> properties = new HashMap<>(this.properties.commonStyles);
-		for (Predicate<Cell> predicate : this.properties.cellStyles.keySet()) {
+		CellAddress cellAddress = new CellAddress(cell);
+		if (this.properties.cellStyles.containsKey(cellAddress)) {
+			properties.putAll(this.properties.cellStyles.get(cellAddress));
+			this.properties.cellStyles.remove(cellAddress);
+		}
+		for (Predicate<Cell> predicate : this.properties.customStyles.keySet()) {
 			if (predicate.test(cell)) {
-				properties.putAll(this.properties.cellStyles.get(predicate));
+				properties.putAll(this.properties.customStyles.get(predicate));
 			}
 		}
 		CellUtils.setCellStyleProperties(cell, properties);
@@ -161,13 +167,24 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 	}
 
 	/**
+	 * 添加自定义样式
+	 */
+	protected void addCustomStyle(Predicate<Cell> predicate, Map<String, Object> properties) {
+		if (this.properties.customStyles.containsKey(predicate)) {
+			this.properties.customStyles.get(predicate).putAll(properties);
+		} else {
+			this.properties.customStyles.put(predicate, properties);
+		}
+	}
+
+	/**
 	 * 添加单元格样式
 	 */
-	protected void addCellStyle(Predicate<Cell> predicate, Map<String, Object> properties) {
-		if (this.properties.cellStyles.containsKey(predicate)) {
-			this.properties.cellStyles.get(predicate).putAll(properties);
+	protected void addCellStyle(CellAddress cellAddress, Map<String, Object> properties) {
+		if (this.properties.cellStyles.containsKey(cellAddress)) {
+			this.properties.cellStyles.get(cellAddress).putAll(properties);
 		} else {
-			this.properties.cellStyles.put(predicate, properties);
+			this.properties.cellStyles.put(cellAddress, properties);
 		}
 	}
 
@@ -180,7 +197,7 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 		} else {
 			this.properties.columnStyles.put(column, properties);
 		}
-		this.addCellStyle(cell -> cell.getColumnIndex() == column, properties);
+		this.addCustomStyle(cell -> cell.getColumnIndex() == column, properties);
 	}
 
 	/**
@@ -199,7 +216,7 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 		} else {
 			this.properties.regionStyles.put(region, properties);
 		}
-		this.addCellStyle(cell -> cell.getColumnIndex() >= region.getFirstColumn()
+		this.addCustomStyle(cell -> cell.getColumnIndex() >= region.getFirstColumn()
 			&& cell.getColumnIndex() <= region.getLastColumn()
 			&& cell.getRowIndex() >= region.getFirstRow()
 			&& cell.getRowIndex() <= region.getLastRow(), properties);
@@ -217,7 +234,9 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 
 		private Map<String, Object> commonStyles = new LinkedHashMap<>();
 
-		private Map<Predicate<Cell>, Map<String, Object>> cellStyles = new LinkedHashMap<>();
+		private Map<Predicate<Cell>, Map<String, Object>> customStyles = new LinkedHashMap<>();
+
+		private Map<CellAddress, Map<String, Object>> cellStyles = new LinkedHashMap<>();
 
 		private Map<Integer, Map<String, Object>> columnStyles = new LinkedHashMap<>();
 
@@ -231,8 +250,11 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 			this.height = properties.height;
 			this.columnWidths.putAll(properties.columnWidths);
 			this.commonStyles.putAll(properties.commonStyles);
-			for (Predicate<Cell> predicate : properties.cellStyles.keySet()) {
-				this.cellStyles.put(predicate, new HashMap<>(properties.cellStyles.get(predicate)));
+			for (Predicate<Cell> predicate : properties.customStyles.keySet()) {
+				this.customStyles.put(predicate, new HashMap<>(properties.customStyles.get(predicate)));
+			}
+			for (CellAddress cellAddress : properties.cellStyles.keySet()) {
+				this.cellStyles.put(cellAddress, new HashMap<>(properties.cellStyles.get(cellAddress)));
 			}
 			for (Integer column : properties.columnStyles.keySet()) {
 				this.columnStyles.put(column, new HashMap<>(properties.columnStyles.get(column)));

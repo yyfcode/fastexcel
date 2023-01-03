@@ -8,6 +8,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.Assert;
 import com.jeeapp.excel.annotation.ExcelProperty;
 import com.jeeapp.excel.annotation.ExcelProperty.Validation;
+import com.jeeapp.excel.util.CellUtils;
 
 /**
  * @author Justice
@@ -16,8 +17,6 @@ import com.jeeapp.excel.annotation.ExcelProperty.Validation;
 public class Cell implements Serializable {
 
 	private static final long serialVersionUID = 8481559629638325751L;
-
-	protected final static String DEFAULT_FORMAT = "General";
 
 	/*-------------------------------------------
     |                位置和值                    |
@@ -45,7 +44,7 @@ public class Cell implements Serializable {
     |                格式化                      |
     ============================================*/
 
-	private String format = DEFAULT_FORMAT;
+	private String format = CellUtils.DEFAULT_FORMAT;
 
 	/*-------------------------------------------
     |               数据验证                     |
