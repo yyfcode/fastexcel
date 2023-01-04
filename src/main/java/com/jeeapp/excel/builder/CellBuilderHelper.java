@@ -108,9 +108,15 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 	 * 设置行样式
 	 */
 	protected void setRowStyle(Sheet sheet, Row row) {
-		if (row.getSheet().getDefaultRowHeightInPoints() == row.getHeightInPoints()) {
+		int rowNum = row.getRowNum();
+		if (sheet.getDefaultRowHeightInPoints() == row.getHeightInPoints()) {
 			row.setHeightInPoints(properties.height);
 		}
+		Map<String, Object> properties = new HashMap<>(this.properties.commonStyles);
+		if (this.properties.rowStyles.containsKey(rowNum)) {
+			properties.putAll(this.properties.rowStyles.get(rowNum));
+		}
+		CellUtils.setRowStyleProperties(sheet, row, properties);
 	}
 
 	/**
@@ -240,6 +246,8 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 
 		private Map<Integer, Map<String, Object>> columnStyles = new LinkedHashMap<>();
 
+		private Map<Integer, Map<String, Object>> rowStyles = new LinkedHashMap<>();
+
 		private Map<CellRangeAddress, Map<String, Object>> regionStyles = new LinkedHashMap<>();
 
 		public CommonProperties() {
@@ -258,6 +266,9 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 			}
 			for (Integer column : properties.columnStyles.keySet()) {
 				this.columnStyles.put(column, new HashMap<>(properties.columnStyles.get(column)));
+			}
+			for (Integer row : properties.rowStyles.keySet()) {
+				this.rowStyles.put(row, new HashMap<>(properties.rowStyles.get(row)));
 			}
 			for (CellRangeAddress region : properties.regionStyles.keySet()) {
 				this.regionStyles.put(region, new HashMap<>(properties.regionStyles.get(region)));

@@ -21,8 +21,6 @@ public class CellRangeBuilder<P extends RowBuilderHelper<P>> extends DataValidat
 
 	private final int lastCol;
 
-	private Object value;
-
 	protected CellRangeBuilder(P parent, int firstRow, int lastRow, int firstCol, int lastCol) {
 		super(parent, firstRow, lastRow, firstCol, lastCol);
 		this.firstRow = firstRow;

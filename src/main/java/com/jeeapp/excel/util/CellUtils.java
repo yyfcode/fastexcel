@@ -162,20 +162,23 @@ public class CellUtils {
 
 	public static void setRowStyleProperties(Sheet sheet, Row row, Map<String, Object> properties) {
 		Workbook workbook = sheet.getWorkbook();
-		CellStyle originalStyle = row.getRowStyle();
-		row.setRowStyle(getStyle(originalStyle, workbook, properties));
+		CellStyle rowStyle = row.getRowStyle();
+		if (!properties.isEmpty() && rowStyle == null) {
+			rowStyle = workbook.createCellStyle();
+		}
+		row.setRowStyle(getStyle(rowStyle, workbook, properties));
 	}
 
 	public static void setCellStyleProperties(Cell cell, Map<String, Object> properties) {
 		Workbook workbook = cell.getSheet().getWorkbook();
-		CellStyle originalStyle = cell.getCellStyle();
-		cell.setCellStyle(getStyle(originalStyle, workbook, properties));
+		CellStyle cellStyle = cell.getCellStyle();
+		cell.setCellStyle(getStyle(cellStyle, workbook, properties));
 	}
 
 	public static void setColumnStyleProperties(Sheet sheet, int column, Map<String, Object> properties) {
 		Workbook workbook = sheet.getWorkbook();
-		CellStyle originalStyle = sheet.getColumnStyle(column);
-		sheet.setDefaultColumnStyle(column, getStyle(originalStyle, workbook, properties));
+		CellStyle columnStyle = sheet.getColumnStyle(column);
+		sheet.setDefaultColumnStyle(column, getStyle(columnStyle, workbook, properties));
 	}
 
 	private static Integer getFont(Workbook workbook, Map<String, Object> properties) {
