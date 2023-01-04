@@ -45,7 +45,14 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 	 * 匹配列
 	 */
 	public CellStyleBuilder<?, B> matchingColumn(int column) {
-		return new CellStyleBuilder<>(self(), column);
+		return new CellStyleBuilder<>(self(), (short) column);
+	}
+
+	/**
+	 * 匹配行
+	 */
+	public CellStyleBuilder<?, B> matchingRow(int row) {
+		return new CellStyleBuilder<>(self(), row);
 	}
 
 	/**
@@ -204,6 +211,18 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 			this.properties.columnStyles.put(column, properties);
 		}
 		this.addCustomStyle(cell -> cell.getColumnIndex() == column, properties);
+	}
+
+	/**
+	 * 添加行样式
+	 */
+	protected void addRowStyle(int row, Map<String, Object> properties) {
+		if (this.properties.rowStyles.containsKey(row)) {
+			this.properties.rowStyles.get(row).putAll(properties);
+		} else {
+			this.properties.rowStyles.put(row, properties);
+		}
+		this.addCustomStyle(cell -> cell.getRowIndex() == row, properties);
 	}
 
 	/**

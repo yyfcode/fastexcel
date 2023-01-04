@@ -26,6 +26,8 @@ public class CellStyleBuilder<B extends CellStyleBuilder<B, P>, P extends CellBu
 
 	private Predicate<Cell> predicate;
 
+	private Integer row;
+
 	private Integer column;
 
 	private CellAddress cell;
@@ -37,9 +39,15 @@ public class CellStyleBuilder<B extends CellStyleBuilder<B, P>, P extends CellBu
 		this.properties = new HashMap<>();
 	}
 
-	protected CellStyleBuilder(P parent, int column) {
+	protected CellStyleBuilder(P parent, short column) {
 		this.parent = parent;
-		this.column = column;
+		this.column = (int) column;
+		this.properties = new HashMap<>();
+	}
+
+	protected CellStyleBuilder(P parent, int row) {
+		this.parent = parent;
+		this.row = row;
 		this.properties = new HashMap<>();
 	}
 
@@ -390,6 +398,8 @@ public class CellStyleBuilder<B extends CellStyleBuilder<B, P>, P extends CellBu
 			parent.addRegionStyle(region, properties);
 		} else if (predicate != null) {
 			parent.addCustomStyle(predicate, properties);
+		} else if (row != null) {
+			parent.addRowStyle(row, properties);
 		} else if (column != null) {
 			parent.addColumnStyle(column, properties);
 		} else {
