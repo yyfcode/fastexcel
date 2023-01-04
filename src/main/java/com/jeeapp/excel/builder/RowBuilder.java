@@ -107,8 +107,7 @@ public class RowBuilder<T> extends RowBuilderHelper<RowBuilder<T>> {
 				.setCommentText(header.getComment())
 				.setCommentAuthor(header.getCommentAuthor())
 				.setCommentSize(header.getCommentWidth(), header.getCommentHeight())
-				.setCellValue(header.getValue())
-				.end();
+				.setCellValue(header.getValue());
 		} else {
 			parent.matchingRegion(firstRow, lastRow, firstCol, lastCol)
 				.setFillForegroundColor(header.getFillForegroundColor())
@@ -122,8 +121,7 @@ public class RowBuilder<T> extends RowBuilderHelper<RowBuilder<T>> {
 				.setCommentText(header.getComment())
 				.setCommentAuthor(header.getCommentAuthor())
 				.setCommentSize(header.getCommentWidth(), header.getCommentHeight())
-				.setCellValue(header.getValue())
-				.end();
+				.setCellValue(header.getValue());
 		}
 	}
 

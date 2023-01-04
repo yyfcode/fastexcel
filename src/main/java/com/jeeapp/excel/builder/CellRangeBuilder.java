@@ -33,7 +33,7 @@ public class CellRangeBuilder<P extends RowBuilderHelper<P>> extends DataValidat
 	public CellBuilder<P> addMergedRegion() {
 		parent.createCell(lastRow, lastCol, null);
 		parent.sheet.addMergedRegion(new CellRangeAddress(firstRow, lastRow, firstCol, lastCol));
-		return parent.matchingCell(new CellAddress(firstRow, firstCol));
+		return end().matchingCell(new CellAddress(firstRow, firstCol));
 	}
 
 	public CellRangeBuilder<P> addPicture(byte[] pictureData, int format) {
