@@ -224,8 +224,7 @@ public class RowBuilder<T> extends RowBuilderHelper<RowBuilder<T>> {
 	 * 判断属性是否需要过滤
 	 */
 	private Boolean matchesProperty(List<String> properties, String property) {
-		return properties.contains(property)
-			|| IterableUtils.matchesAny(properties, it -> it.startsWith(property + "."));
+		return IterableUtils.matchesAny(properties, it -> property.startsWith(it + ".") || property.equals(it));
 	}
 
 	/**
