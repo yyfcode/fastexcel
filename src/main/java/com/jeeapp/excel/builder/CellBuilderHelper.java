@@ -7,6 +7,7 @@ import java.util.function.Predicate;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -91,7 +92,9 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 
 	/**
 	 * 指定列宽
+	 * @deprecated use {@link ColumnBuilderHelper#setColumnWidth(int)} instead.
 	 */
+	@Deprecated
 	public B setColumnWidth(int column, int width) {
 		properties.columnWidths.put(column, width * 256);
 		return self();
@@ -116,14 +119,13 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 	 */
 	protected void setRowStyle(Sheet sheet, Row row) {
 		int rowNum = row.getRowNum();
-		if (sheet.getDefaultRowHeightInPoints() == row.getHeightInPoints()) {
-			row.setHeightInPoints(properties.height);
-		}
 		Map<String, Object> properties = new HashMap<>(this.properties.commonStyles);
 		if (this.properties.rowStyles.containsKey(rowNum)) {
 			properties.putAll(this.properties.rowStyles.get(rowNum));
 		}
-		CellUtils.setRowStyleProperties(sheet, row, properties);
+		if (MapUtils.isNotEmpty(properties)) {
+			CellUtils.setRowStyleProperties(sheet, row, properties);
+		}
 	}
 
 	/**
@@ -134,7 +136,9 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 		if (this.properties.regionStyles.containsKey(region)) {
 			properties.putAll(this.properties.regionStyles.get(region));
 		}
-		CellUtils.setRegionStyleProperties(sheet, region, properties);
+		if (MapUtils.isNotEmpty(properties)) {
+			CellUtils.setRegionStyleProperties(sheet, region, properties);
+		}
 	}
 
 	/**
@@ -152,7 +156,9 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 				properties.putAll(this.properties.customStyles.get(predicate));
 			}
 		}
-		CellUtils.setCellStyleProperties(cell, properties);
+		if (MapUtils.isNotEmpty(properties)) {
+			CellUtils.setCellStyleProperties(cell, properties);
+		}
 	}
 
 	/**
@@ -161,7 +167,9 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 	protected void setColumnStyle(Sheet sheet, int column) {
 		Map<String, Object> properties = new HashMap<>(this.properties.commonStyles);
 		properties.putAll(this.properties.columnStyles.get(column));
-		CellUtils.setColumnStyleProperties(sheet, column, properties);
+		if (MapUtils.isNotEmpty(properties)) {
+			CellUtils.setColumnStyleProperties(sheet, column, properties);
+		}
 	}
 
 	/**

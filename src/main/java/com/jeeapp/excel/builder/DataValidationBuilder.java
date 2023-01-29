@@ -14,7 +14,7 @@ import org.apache.poi.ss.util.CellRangeAddressList;
  * @since 0.0.2
  */
 @SuppressWarnings("unchecked")
-public class DataValidationBuilder<B extends DataValidationBuilder<B, P>, P extends RowBuilderHelper<P>> extends CellStyleBuilder<B, P> {
+public class DataValidationBuilder<B extends DataValidationBuilder<B, P>, P extends SheetBuilderHelper<P>> extends CellStyleBuilder<B, P> {
 
 	private final P parent;
 

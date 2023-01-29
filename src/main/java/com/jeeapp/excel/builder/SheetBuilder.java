@@ -17,7 +17,7 @@ import com.jeeapp.excel.model.Row;
  * @author justice
  */
 @Slf4j
-public class SheetBuilder extends RowBuilderHelper<SheetBuilder> {
+public class SheetBuilder extends SheetBuilderHelper<SheetBuilder> {
 
 	private final WorkbookBuilder parent;
 

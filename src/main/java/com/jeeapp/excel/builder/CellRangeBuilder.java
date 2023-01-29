@@ -9,7 +9,7 @@ import org.apache.poi.ss.util.SheetUtil;
 /**
  * @author justice
  */
-public class CellRangeBuilder<P extends RowBuilderHelper<P>> extends DataValidationBuilder<CellRangeBuilder<P>, P> {
+public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends DataValidationBuilder<CellRangeBuilder<P>, P> {
 
 	private final P parent;
 
@@ -68,7 +68,7 @@ public class CellRangeBuilder<P extends RowBuilderHelper<P>> extends DataValidat
 	}
 
 	/**
-	 * @deprecated use {@link RowBuilderHelper#matchingRegion(int, int, int, int)} instead.
+	 * @deprecated use {@link SheetBuilderHelper#matchingRegion(int, int, int, int)} instead.
 	 */
 	@Deprecated
 	public CellRangeBuilder<P> addCellRange(int firstRow, int lastRow, int firstCol, int lastCol) {

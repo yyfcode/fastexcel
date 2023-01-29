@@ -11,7 +11,7 @@ import org.apache.poi.ss.util.CellAddress;
  * @author Justice
  * @since 0.0.2
  */
-public class CellBuilder<P extends RowBuilderHelper<P>> extends DataValidationBuilder<CellBuilder<P>, P> {
+public class CellBuilder<P extends SheetBuilderHelper<P>> extends DataValidationBuilder<CellBuilder<P>, P> {
 
 	private final P parent;
 
