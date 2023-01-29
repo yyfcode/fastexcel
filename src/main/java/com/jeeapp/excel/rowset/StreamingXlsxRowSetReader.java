@@ -10,6 +10,7 @@ import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.xml.sax.Attributes;
 import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;
@@ -68,6 +69,7 @@ class StreamingXlsxRowSetReader implements RowSetReader {
 
 	public void open() throws Exception {
 		open = true;
+		ZipSecureFile.setMinInflateRatio(0);
 		OPCPackage opcPackage = OPCPackage.open(inputStream);
 		XSSFReader reader = new XSSFReader(opcPackage);
 		sheetIterator = (XSSFReader.SheetIterator) reader.getSheetsData();
