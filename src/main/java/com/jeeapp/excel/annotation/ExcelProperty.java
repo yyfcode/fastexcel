@@ -42,6 +42,11 @@ public @interface ExcelProperty {
 	int width() default 8;
 
 	/**
+	 * 列隐藏
+	 */
+	boolean hidden() default false;
+
+	/**
 	 * 表头样式
 	 */
 	Header header() default @Header;

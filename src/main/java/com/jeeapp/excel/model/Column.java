@@ -47,15 +47,15 @@ public class Column extends Cell {
 
 	private BorderStyle border = BorderStyle.THIN;
 
-	private short borderColor;
+	private Short borderColor;
 
 	private FillPatternType fillPatternType = FillPatternType.SOLID_FOREGROUND;
 
-	private short fillBackgroundColor = IndexedColors.WHITE1.getIndex();
+	private Short fillBackgroundColor = IndexedColors.WHITE1.getIndex();
 
-	private short fillForegroundColor = IndexedColors.GREY_25_PERCENT.getIndex();
+	private Short fillForegroundColor = IndexedColors.GREY_25_PERCENT.getIndex();
 
-	private short fontColor = IndexedColors.BLACK.getIndex();
+	private Short fontColor = IndexedColors.BLACK.getIndex();
 
 	private String comment;
 
@@ -65,6 +65,8 @@ public class Column extends Cell {
 
 	private Integer commentHeight;
 
+	private Boolean hidden;
+
 	public Column(Field field) {
 		super(field);
 		this.setValue(StringUtils.capitalize(StringUtils.join(SPLIT_CAMEL_CASE.split(field.getName()), " ")));
@@ -73,6 +75,7 @@ public class Column extends Cell {
 		// 标题和宽度
 		this.setValue(property.name());
 		this.setWidth(property.width());
+		this.setHidden(property.hidden());
 		// 表头样式
 		Header header = property.header();
 		this.setBorder(header.border());

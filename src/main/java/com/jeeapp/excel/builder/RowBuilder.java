@@ -82,6 +82,7 @@ public class RowBuilder<T> extends SheetBuilderHelper<RowBuilder<T>> {
 		parent.setColumnWidth(firstCol, width)
 			.matchingColumn(firstCol)
 			.setDataFormat(header.getFormat())
+			.setColumnHidden(header.getHidden())
 			.end()
 			.matchingRegion(this.lastRow + 1, parent.maxRows - this.lastRow - 1, lastCol, lastCol)
 			.createConstraint(header.getValidationType(),
