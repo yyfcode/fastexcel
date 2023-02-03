@@ -148,7 +148,17 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	 * 匹配最后一个单元格
 	 */
 	public CellBuilder<B> matchingCell() {
-		return matchingCell(sheet.getLastRowNum(), sheet.getRow(sheet.getLastRowNum()).getLastCellNum());
+		int lastRowNum = sheet.getLastRowNum() == -1 ? 0 : sheet.getLastRowNum();
+		Row row = sheet.getRow(lastRowNum);
+		if(row == null){
+			row = sheet.createRow(lastRowNum);
+		}
+		short lastCellNum = row.getLastCellNum() == -1 ? 0 : row.getLastCellNum();
+		Cell cell = row.getCell(lastCellNum);
+		if (cell == null) {
+			cell = row.createCell(lastCellNum);
+		}
+		return matchingCell(new CellAddress(cell));
 	}
 
 	/**
