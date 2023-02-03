@@ -83,20 +83,22 @@ public class RowBuilder<T> extends SheetBuilderHelper<RowBuilder<T>> {
 			.matchingColumn(firstCol)
 			.setDataFormat(header.getFormat())
 			.setColumnHidden(header.getHidden())
-			.end()
-			.matchingRegion(this.lastRow + 1, parent.maxRows - this.lastRow - 1, lastCol, lastCol)
-			.createConstraint(header.getValidationType(),
-				header.getOperatorType(),
-				header.getFirstFormula(),
-				header.getSecondFormula(),
-				header.getExplicitListValues(),
-				header.getDateFormat())
-			.allowedEmptyCell(header.isAllowEmpty())
-			.setErrorStyle(header.getErrorStyle())
-			.showErrorBox(header.isShowErrorBox(), header.getErrorBoxTitle(), header.getErrorBoxText())
-			.showPromptBox(header.isShowPromptBox(), header.getPromptBoxTitle(), header.getPromptBoxText())
-			.addValidationData()
 			.end();
+		if (header.getValidationType() > -1) {
+			parent.matchingRegion(this.lastRow + 1, parent.maxRows - this.lastRow - 1, lastCol, lastCol)
+				.createConstraint(header.getValidationType(),
+					header.getOperatorType(),
+					header.getFirstFormula(),
+					header.getSecondFormula(),
+					header.getExplicitListValues(),
+					header.getDateFormat())
+				.allowedEmptyCell(header.isAllowEmpty())
+				.setErrorStyle(header.getErrorStyle())
+				.showErrorBox(header.isShowErrorBox(), header.getErrorBoxTitle(), header.getErrorBoxText())
+				.showPromptBox(header.isShowPromptBox(), header.getPromptBoxTitle(), header.getPromptBoxText())
+				.addValidationData()
+				.end();
+		}
 		if (firstRow == lastRow && firstCol == lastCol) {
 			parent.matchingCell(firstRow, firstCol)
 				.setFillForegroundColor(header.getFillForegroundColor())
