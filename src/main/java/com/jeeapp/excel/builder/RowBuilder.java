@@ -139,6 +139,8 @@ public class RowBuilder<T> extends SheetBuilderHelper<RowBuilder<T>> {
 		thisRow = parent.sheet.getLastRowNum() + 1;
 		lastRow = thisRow;
 		List<Cell> cells = resolveCells(object);
+		int maxRow = 0;
+		int maxCol = 0;
 		for (Cell cell : cells) {
 			int firstRow = cell.getFirstRow();
 			int lastRow = cell.getLastRow();
@@ -152,7 +154,12 @@ public class RowBuilder<T> extends SheetBuilderHelper<RowBuilder<T>> {
 					.addMergedRegion()
 					.end();
 			}
+			maxRow = Math.max(lastRow, maxRow);
+			maxCol = Math.max(lastCol, maxCol);
 		}
+		// 填充未定义的单元
+		parent.matchingRegion(thisRow, maxRow, 0, maxCol)
+			.fillUndefinedCells();
 		return this;
 	}
 
