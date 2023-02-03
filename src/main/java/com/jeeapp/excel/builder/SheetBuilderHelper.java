@@ -75,9 +75,9 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	}
 
 	/**
-	 * 创建单元格
+	 * 创建有值的单元格(支持公式)
 	 */
-	protected Cell createCell() {
+	public B createCell(Object value) {
 		int lastRowNum = sheet.getLastRowNum() == -1 ? 0 : sheet.getLastRowNum();
 		Row row = sheet.getRow(lastRowNum);
 		if (row == null) {
@@ -89,23 +89,15 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 		if (cell == null) {
 			cell = row.createCell(lastCellNum);
 		}
-		return cell;
-	}
-
-	/**
-	 * 创建有值的单元格(支持公式)
-	 */
-	public B createCell(Object value) {
-		Cell cell = createCell();
 		CellUtils.setCellValue(cell, value);
 		setCellStyle(cell);
 		return self();
 	}
 
 	/**
-	 * 指定位置创建无值单元格
+	 * 指定位置创建有值单元格
 	 */
-	protected Cell createCell(CellAddress cellAddress) {
+	public B createCell(CellAddress cellAddress, Object value) {
 		Row row = sheet.getRow(cellAddress.getRow());
 		if (row == null) {
 			row = sheet.createRow(cellAddress.getRow());
@@ -115,17 +107,16 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 		if (cell == null) {
 			cell = row.createCell(cellAddress.getColumn());
 		}
-		return cell;
-	}
-
-	/**
-	 * 指定位置创建有值单元格
-	 */
-	public B createCell(CellAddress cellAddress, Object value) {
-		Cell cell = createCell(cellAddress);
 		CellUtils.setCellValue(cell, value);
 		setCellStyle(cell);
 		return self();
+	}
+
+	/**
+	 * 指定位置创建空单元格
+	 */
+	public B createCell(CellAddress cellAddress) {
+		return createCell(cellAddress, null);
 	}
 
 	/**
@@ -133,6 +124,13 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	 */
 	public B createCell(int row, int column, Object value) {
 		return createCell(new CellAddress(row, column), value);
+	}
+
+	/**
+	 * 指定位置创建空单元格
+	 */
+	public B createCell(int row, int column) {
+		return createCell(row, column, null);
 	}
 
 	/**

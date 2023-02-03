@@ -56,6 +56,10 @@ public class CellBuilder<P extends SheetBuilderHelper<P>> extends DataValidation
 	}
 
 	public P setCellValue(Object value) {
-		return end().createCell(cellAddress.getRow(), cellAddress.getColumn(), value);
+		return end().createCell(cellAddress, value);
+	}
+
+	public P setBlank() {
+		return end().createCell(cellAddress);
 	}
 }

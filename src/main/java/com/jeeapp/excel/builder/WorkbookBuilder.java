@@ -42,6 +42,22 @@ public class WorkbookBuilder extends CellBuilderHelper<WorkbookBuilder> {
 	}
 
 	/**
+	 * 设置默认行高
+	 */
+	@Override
+	public WorkbookBuilder setDefaultRowHeight(int height) {
+		return super.setDefaultRowHeight(height);
+	}
+
+	/**
+	 * 设置默认列宽
+	 */
+	@Override
+	public WorkbookBuilder setDefaultColumnWidth(int width) {
+		return super.setDefaultColumnWidth(width);
+	}
+
+	/**
 	 * 打开工作表
 	 */
 	public SheetBuilder openSheet(String sheetName) {

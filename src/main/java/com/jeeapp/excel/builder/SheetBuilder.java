@@ -40,7 +40,7 @@ public class SheetBuilder extends SheetBuilderHelper<SheetBuilder> {
 	}
 
 	/**
-	 * 工作表列宽
+	 * 设置默认列宽
 	 */
 	@Override
 	public SheetBuilder setDefaultColumnWidth(int width) {
@@ -49,9 +49,17 @@ public class SheetBuilder extends SheetBuilderHelper<SheetBuilder> {
 	}
 
 	/**
-	 * 设置列宽
+	 * 设置默认行高
 	 */
 	@Override
+	public SheetBuilder setDefaultRowHeight(int height) {
+		sheet.setDefaultRowHeightInPoints(height);
+		return this;
+	}
+
+	/**
+	 * 设置列宽
+	 */
 	public SheetBuilder setColumnWidth(int column, int width) {
 		sheet.setColumnWidth(column, width * 256);
 		return this;

@@ -77,7 +77,7 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 	/**
 	 * 行高
 	 */
-	public B setDefaultRowHeight(int height) {
+	protected B setDefaultRowHeight(int height) {
 		properties.height = height;
 		return self();
 	}
@@ -85,18 +85,8 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 	/**
 	 * 列宽
 	 */
-	public B setDefaultColumnWidth(int width) {
+	protected B setDefaultColumnWidth(int width) {
 		properties.width = width;
-		return self();
-	}
-
-	/**
-	 * 指定列宽
-	 * @deprecated use {@link ColumnBuilderHelper#setColumnWidth(int)} instead.
-	 */
-	@Deprecated
-	public B setColumnWidth(int column, int width) {
-		properties.columnWidths.put(column, width * 256);
 		return self();
 	}
 
@@ -182,9 +172,6 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 		if (properties.height != null) {
 			sheet.setDefaultRowHeightInPoints(properties.height);
 		}
-		for (int column : properties.columnWidths.keySet()) {
-			sheet.setColumnWidth(column, properties.columnWidths.get(column));
-		}
 	}
 
 	/**
@@ -263,8 +250,6 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 
 		private Integer height;
 
-		private Map<Integer, Integer> columnWidths = new HashMap<>();
-
 		private Map<String, Object> commonStyles = new LinkedHashMap<>();
 
 		private Map<Predicate<Cell>, Map<String, Object>> customStyles = new LinkedHashMap<>();
@@ -283,7 +268,6 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 		public CommonProperties(CommonProperties properties) {
 			this.width = properties.width;
 			this.height = properties.height;
-			this.columnWidths.putAll(properties.columnWidths);
 			this.commonStyles.putAll(properties.commonStyles);
 			for (Predicate<Cell> predicate : properties.customStyles.keySet()) {
 				this.customStyles.put(predicate, new HashMap<>(properties.customStyles.get(predicate)));

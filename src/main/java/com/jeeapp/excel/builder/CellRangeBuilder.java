@@ -31,7 +31,7 @@ public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends DataValid
 	}
 
 	public CellBuilder<P> addMergedRegion() {
-		parent.createCell(lastRow, lastCol, null);
+		parent.createCell(lastRow, lastCol);
 		parent.sheet.addMergedRegion(new CellRangeAddress(firstRow, lastRow, firstCol, lastCol));
 		return end().matchingCell(new CellAddress(firstRow, firstCol));
 	}
@@ -80,6 +80,7 @@ public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends DataValid
 	 */
 	@Deprecated
 	public P merge() {
-		return addMergedRegion().end();
+		addMergedRegion();
+		return parent;
 	}
 }
