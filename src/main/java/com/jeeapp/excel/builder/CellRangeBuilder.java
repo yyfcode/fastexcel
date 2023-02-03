@@ -30,12 +30,36 @@ public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends DataValid
 		this.parent = parent;
 	}
 
-	public CellBuilder<P> addMergedRegion() {
-		parent.createCell(lastRow, lastCol);
-		parent.sheet.addMergedRegion(new CellRangeAddress(firstRow, lastRow, firstCol, lastCol));
-		return end().matchingCell(new CellAddress(firstRow, firstCol));
+	/**
+	 * 添加合并区域
+	 */
+	public P addMergedRegion() {
+		P parent = end();
+		parent.addMergedRegion(new CellRangeAddress(firstRow, lastRow, firstCol, lastCol));
+		Cell cell = SheetUtil.getCell(parent.sheet, firstRow, firstCol);
+		if (cell != null) {
+			parent.setCellStyle(cell);
+		}
+		return end();
 	}
 
+	/**
+	 * 添加样式
+	 */
+	public P addCellStyle() {
+		P parent = end();
+		for (CellAddress cellAddress : new CellRangeAddress(firstRow, lastRow, firstCol, lastCol)) {
+			Cell cell = SheetUtil.getCellWithMerges(parent.sheet, cellAddress.getRow(), cellAddress.getColumn());
+			if (cell != null) {
+				parent.setCellStyle(cell);
+			}
+		}
+		return parent;
+	}
+
+	/**
+	 * 创建图片
+	 */
 	public CellRangeBuilder<P> createPicture(byte[] pictureData, int format) {
 		ClientAnchor clientAnchor = creationHelper.createClientAnchor();
 		clientAnchor.setRow1(firstRow);
@@ -47,6 +71,9 @@ public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends DataValid
 		return this;
 	}
 
+	/**
+	 * 填充未定义的单元格
+	 */
 	public P fillUndefinedCells() {
 		P parent = end();
 		for (CellAddress cellAddress : new CellRangeAddress(firstRow, lastRow, firstCol, lastCol)) {

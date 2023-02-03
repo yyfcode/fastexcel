@@ -405,12 +405,4 @@ public class CellStyleBuilder<B extends CellStyleBuilder<B, P>, P extends CellBu
 		}
 		return parent;
 	}
-
-	/**
-	 * @deprecated use {@link CellStyleBuilder#end()} instead.
-	 */
-	@Deprecated
-	public P addCellStyle() {
-		return end();
-	}
 }

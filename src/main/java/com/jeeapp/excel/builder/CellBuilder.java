@@ -1,10 +1,12 @@
 package com.jeeapp.excel.builder;
 
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.ss.usermodel.Comment;
 import org.apache.poi.ss.usermodel.Drawing;
 import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.ss.util.CellAddress;
+import org.apache.poi.ss.util.SheetUtil;
 
 /**
  * @author Justice
@@ -55,11 +57,29 @@ public class CellBuilder<P extends SheetBuilderHelper<P>> extends DataValidation
 		return self();
 	}
 
+	/**
+	 * 设置单元格值
+	 */
 	public P setCellValue(Object value) {
 		return end().createCell(cellAddress, value);
 	}
 
+	/**
+	 * 设置空单元
+	 */
 	public P setBlank() {
 		return end().createCell(cellAddress);
+	}
+
+	/**
+	 * 添加样式
+	 */
+	public P addCellStyle() {
+		P parent = end();
+		Cell cell = SheetUtil.getCell(parent.sheet, cellAddress.getRow(), cellAddress.getColumn());
+		if (cell != null) {
+			parent.setCellStyle(cell);
+		}
+		return parent;
 	}
 }

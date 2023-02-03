@@ -121,7 +121,8 @@ public class RowBuilder<T> extends SheetBuilderHelper<RowBuilder<T>> {
 				.setBorderColor(header.getBorderColor())
 				.setCellValue(header.getValue());
 		} else {
-			parent.matchingRegion(firstRow, lastRow, firstCol, lastCol)
+			parent.createCell(firstRow, firstCol, header.getValue())
+				.matchingRegion(firstRow, lastRow, firstCol, lastCol)
 				.setFillForegroundColor(header.getFillForegroundColor())
 				.setFillBackgroundColor(header.getFillBackgroundColor())
 				.setFillPattern(header.getFillPatternType())
@@ -129,8 +130,7 @@ public class RowBuilder<T> extends SheetBuilderHelper<RowBuilder<T>> {
 				.setFontBold(true)
 				.setBorder(header.getBorder())
 				.setBorderColor(header.getBorderColor())
-				.addMergedRegion()
-				.setCellValue(header.getValue());
+				.addMergedRegion();
 		}
 	}
 
@@ -151,8 +151,7 @@ public class RowBuilder<T> extends SheetBuilderHelper<RowBuilder<T>> {
 			} else {
 				parent.createCell(firstRow, firstCol, cell.getValue())
 					.matchingRegion(firstRow, lastRow, firstCol, lastCol)
-					.addMergedRegion()
-					.end();
+					.addMergedRegion();
 			}
 			maxRow = Math.max(lastRow, maxRow);
 			maxCol = Math.max(lastCol, maxCol);

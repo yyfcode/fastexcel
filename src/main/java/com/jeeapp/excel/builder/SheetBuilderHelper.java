@@ -48,8 +48,7 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	 * 创建空行
 	 */
 	public B createRow() {
-		Row row = sheet.createRow(sheet.getLastRowNum() + 1);
-		setRowStyle(sheet, row);
+		sheet.createRow(sheet.getLastRowNum() + 1);
 		return self();
 	}
 
@@ -82,7 +81,6 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 		Row row = sheet.getRow(lastRowNum);
 		if (row == null) {
 			row = sheet.createRow(lastRowNum);
-			setRowStyle(sheet, row);
 		}
 		int lastCellNum = row.getLastCellNum() == -1 ? 0 : row.getLastCellNum();
 		Cell cell = row.getCell(lastCellNum);
@@ -101,7 +99,6 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 		Row row = sheet.getRow(cellAddress.getRow());
 		if (row == null) {
 			row = sheet.createRow(cellAddress.getRow());
-			setRowStyle(sheet, row);
 		}
 		Cell cell = row.getCell(cellAddress.getColumn());
 		if (cell == null) {

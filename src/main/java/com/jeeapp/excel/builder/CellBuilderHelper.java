@@ -14,6 +14,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellAddress;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.CellRangeAddressList;
 import com.jeeapp.excel.util.CellUtils;
 
 /**
@@ -99,7 +100,15 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 		for (int column : properties.columnStyles.keySet()) {
 			setColumnStyle(sheet, column);
 		}
-		for (CellRangeAddress region : sheet.getMergedRegions()) {
+		for (int rowNum : properties.rowStyles.keySet()) {
+			Row row = sheet.getRow(rowNum);
+			if (row == null) {
+				row = sheet.createRow(rowNum);
+			}
+			setRowStyle(sheet, row);
+		}
+		for (CellRangeAddress region : properties.mergedRegions.getCellRangeAddresses()) {
+			sheet.addMergedRegion(region);
 			setRegionStyle(sheet, region);
 		}
 	}
@@ -244,6 +253,13 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 			&& cell.getRowIndex() <= region.getLastRow(), properties);
 	}
 
+	/**
+	 * 添加全局样式
+	 */
+	protected void addMergedRegion(CellRangeAddress region) {
+		this.properties.mergedRegions.addCellRangeAddress(region);
+	}
+
 	@Getter
 	@Setter
 	protected static class CommonProperties {
@@ -253,6 +269,8 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 		private Integer height;
 
 		private Map<String, Object> commonStyles = new LinkedHashMap<>();
+
+		private CellRangeAddressList mergedRegions = new CellRangeAddressList();
 
 		private Map<Predicate<Cell>, Map<String, Object>> customStyles = new LinkedHashMap<>();
 
@@ -285,6 +303,9 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 			}
 			for (CellRangeAddress region : properties.regionStyles.keySet()) {
 				this.regionStyles.put(region, new HashMap<>(properties.regionStyles.get(region)));
+			}
+			for (CellRangeAddress region : properties.mergedRegions.getCellRangeAddresses()) {
+				this.mergedRegions.addCellRangeAddress(region);
 			}
 		}
 	}
