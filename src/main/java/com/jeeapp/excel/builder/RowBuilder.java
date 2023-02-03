@@ -22,6 +22,7 @@ import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.poi.ss.usermodel.DataValidationConstraint.ValidationType;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellAddress;
 import org.springframework.beans.BeanUtils;
@@ -77,14 +78,15 @@ public class RowBuilder<T> extends SheetBuilderHelper<RowBuilder<T>> {
 			lastRow = this.lastRow;
 		}
 
-		// 设置表头样式
+		// data format
 		int width = header.getWidth() == 8 ? parent.sheet.getDefaultColumnWidth() : header.getWidth();
 		parent.setColumnWidth(firstCol, width)
 			.matchingColumn(firstCol)
 			.setDataFormat(header.getFormat())
 			.setColumnHidden(header.getHidden())
 			.end();
-		if (header.getValidationType() > -1) {
+		// data validation
+		if (header.getValidationType() > ValidationType.ANY && header.getValidationType() <= ValidationType.FORMULA) {
 			parent.matchingRegion(this.lastRow + 1, parent.maxRows - this.lastRow - 1, lastCol, lastCol)
 				.createConstraint(header.getValidationType(),
 					header.getOperatorType(),
@@ -99,6 +101,15 @@ public class RowBuilder<T> extends SheetBuilderHelper<RowBuilder<T>> {
 				.addValidationData()
 				.end();
 		}
+		// cell comment
+		if (StringUtils.isNotBlank(header.getComment())) {
+			parent.matchingCell(firstRow, firstCol)
+				.createCellComment(header.getComment(),
+					header.getCommentAuthor(),
+					header.getCommentWidth(),
+					header.getCommentHeight());
+		}
+		// cell style
 		if (firstRow == lastRow && firstCol == lastCol) {
 			parent.matchingCell(firstRow, firstCol)
 				.setFillForegroundColor(header.getFillForegroundColor())
@@ -108,10 +119,6 @@ public class RowBuilder<T> extends SheetBuilderHelper<RowBuilder<T>> {
 				.setFontBold(true)
 				.setBorder(header.getBorder())
 				.setBorderColor(header.getBorderColor())
-				.createCellComment(header.getComment(),
-					header.getCommentAuthor(),
-					header.getCommentWidth(),
-					header.getCommentHeight())
 				.setCellValue(header.getValue());
 		} else {
 			parent.matchingRegion(firstRow, lastRow, firstCol, lastCol)
@@ -123,10 +130,6 @@ public class RowBuilder<T> extends SheetBuilderHelper<RowBuilder<T>> {
 				.setBorder(header.getBorder())
 				.setBorderColor(header.getBorderColor())
 				.addMergedRegion()
-				.createCellComment(header.getComment(),
-					header.getCommentAuthor(),
-					header.getCommentWidth(),
-					header.getCommentHeight())
 				.setCellValue(header.getValue());
 		}
 	}
@@ -230,7 +233,7 @@ public class RowBuilder<T> extends SheetBuilderHelper<RowBuilder<T>> {
 	 * 判断属性是否需要过滤
 	 */
 	private Boolean matchesProperty(List<String> properties, String property) {
-		return IterableUtils.matchesAny(properties, it -> property.startsWith(it + ".") || property.equals(it));
+		return IterableUtils.matchesAny(properties, it -> it.startsWith(property + ".") || property.equals(it));
 	}
 
 	/**

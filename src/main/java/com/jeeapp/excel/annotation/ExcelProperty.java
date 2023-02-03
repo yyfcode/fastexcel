@@ -10,6 +10,7 @@ import java.lang.annotation.Target;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.DataValidation.ErrorStyle;
 import org.apache.poi.ss.usermodel.DataValidationConstraint.OperatorType;
+import org.apache.poi.ss.usermodel.DataValidationConstraint.ValidationType;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.IndexedColors;
 
@@ -146,7 +147,7 @@ public @interface ExcelProperty {
 		 * 验证类型
 		 * @see org.apache.poi.ss.usermodel.DataValidationConstraint.ValidationType
 		 */
-		int validationType() default -1;
+		int validationType() default ValidationType.ANY;
 
 		/**
 		 * 操作类型

@@ -377,9 +377,7 @@ public class CellStyleBuilder<B extends CellStyleBuilder<B, P>, P extends CellBu
 	 * 格式化
 	 */
 	public B setDataFormat(String pFmt) {
-		if (!pFmt.equals(CellUtils.DEFAULT_FORMAT)) {
-			properties.put(CellUtil.DATA_FORMAT, parent.workbook.createDataFormat().getFormat(pFmt));
-		}
+		properties.put(CellUtil.DATA_FORMAT, parent.workbook.createDataFormat().getFormat(pFmt));
 		return self();
 	}
 

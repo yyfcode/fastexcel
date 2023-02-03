@@ -105,16 +105,29 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 	}
 
 	/**
-	 * 设置行样式
+	 * 设置行样式，行样式并不包含全局样式，需要单独设置
 	 */
 	protected void setRowStyle(Sheet sheet, Row row) {
 		int rowNum = row.getRowNum();
-		Map<String, Object> properties = new HashMap<>(this.properties.commonStyles);
+		Map<String, Object> properties = new HashMap<>();
 		if (this.properties.rowStyles.containsKey(rowNum)) {
 			properties.putAll(this.properties.rowStyles.get(rowNum));
 		}
 		if (MapUtils.isNotEmpty(properties)) {
 			CellUtils.setRowStyleProperties(sheet, row, properties);
+		}
+	}
+
+	/**
+	 * 设置列样式，列样式并不包含全局样式，需要单独设置
+	 */
+	protected void setColumnStyle(Sheet sheet, int column) {
+		Map<String, Object> properties = new HashMap<>();
+		if (this.properties.columnStyles.containsKey(column)) {
+			properties.putAll(this.properties.columnStyles.get(column));
+		}
+		if (MapUtils.isNotEmpty(properties)) {
+			CellUtils.setColumnStyleProperties(sheet, column, properties);
 		}
 	}
 
@@ -148,17 +161,6 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 		}
 		if (MapUtils.isNotEmpty(properties)) {
 			CellUtils.setCellStyleProperties(cell, properties);
-		}
-	}
-
-	/**
-	 * 设置列样式
-	 */
-	protected void setColumnStyle(Sheet sheet, int column) {
-		Map<String, Object> properties = new HashMap<>(this.properties.commonStyles);
-		properties.putAll(this.properties.columnStyles.get(column));
-		if (MapUtils.isNotEmpty(properties)) {
-			CellUtils.setColumnStyleProperties(sheet, column, properties);
 		}
 	}
 
