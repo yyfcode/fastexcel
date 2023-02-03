@@ -74,7 +74,7 @@ public class SheetBuilder extends SheetBuilderHelper<SheetBuilder> {
 			Set<Comment> comments = row.getComments();
 			if (CollectionUtils.isNotEmpty(comments)) {
 				for (Comment comment : comments) {
-					matchingCell(row.getRowNum(), comment.getColNum())
+					matchingCell(sheet.getLastRowNum(), comment.getColNum())
 						.createCellComment(comment.getText(), comment.getAuthor())
 						.end();
 				}
