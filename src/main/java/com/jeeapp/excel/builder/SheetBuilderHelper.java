@@ -176,9 +176,7 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	@Deprecated
 	public B createCellComment(String comment, String author, int row1, int col1, int row2, int col2) {
 		return matchingCell(new CellAddress(row1, col1))
-			.setCommentText(comment)
-			.setCommentSize(row2, col2)
-			.setCommentAuthor(author)
+			.createCellComment(comment, author, row2, col2)
 			.end();
 	}
 
@@ -189,9 +187,7 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	@Deprecated
 	public B createCellComment(String comment, String author, int row2, int col2) {
 		return matchingCell()
-			.setCommentText(comment)
-			.setCommentSize(row2, col2)
-			.setCommentAuthor(author)
+			.createCellComment(comment, author, row2, col2)
 			.end();
 	}
 }

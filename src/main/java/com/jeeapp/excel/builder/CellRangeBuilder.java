@@ -9,7 +9,7 @@ import org.apache.poi.ss.util.SheetUtil;
 /**
  * @author justice
  */
-public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends DataValidationBuilder<CellRangeBuilder<P>, P> {
+public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends DataValidationBuilderHelper<CellRangeBuilder<P>, P> {
 
 	private final P parent;
 
@@ -36,7 +36,7 @@ public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends DataValid
 		return end().matchingCell(new CellAddress(firstRow, firstCol));
 	}
 
-	public CellRangeBuilder<P> addPicture(byte[] pictureData, int format) {
+	public CellRangeBuilder<P> createPicture(byte[] pictureData, int format) {
 		ClientAnchor clientAnchor = creationHelper.createClientAnchor();
 		clientAnchor.setRow1(firstRow);
 		clientAnchor.setCol1(firstCol);
@@ -59,7 +59,7 @@ public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends DataValid
 	}
 
 	/**
-	 * @deprecated use {@link CellBuilder#setCommentText(String)} instead.
+	 * @deprecated use {@link CellBuilder#createCellComment(String, String, int, int)} instead.
 	 */
 	@Deprecated
 	public CellRangeBuilder<P> setCellComment(String comment, String author, int row2, int col2) {

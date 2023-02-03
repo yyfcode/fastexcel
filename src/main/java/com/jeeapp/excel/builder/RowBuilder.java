@@ -95,6 +95,7 @@ public class RowBuilder<T> extends SheetBuilderHelper<RowBuilder<T>> {
 			.setErrorStyle(header.getErrorStyle())
 			.showErrorBox(header.isShowErrorBox(), header.getErrorBoxTitle(), header.getErrorBoxText())
 			.showPromptBox(header.isShowPromptBox(), header.getPromptBoxTitle(), header.getPromptBoxText())
+			.addValidationData()
 			.end();
 		if (firstRow == lastRow && firstCol == lastCol) {
 			parent.matchingCell(firstRow, firstCol)
@@ -105,9 +106,10 @@ public class RowBuilder<T> extends SheetBuilderHelper<RowBuilder<T>> {
 				.setFontBold(true)
 				.setBorder(header.getBorder())
 				.setBorderColor(header.getBorderColor())
-				.setCommentText(header.getComment())
-				.setCommentAuthor(header.getCommentAuthor())
-				.setCommentSize(header.getCommentWidth(), header.getCommentHeight())
+				.createCellComment(header.getComment(),
+					header.getCommentAuthor(),
+					header.getCommentWidth(),
+					header.getCommentHeight())
 				.setCellValue(header.getValue());
 		} else {
 			parent.matchingRegion(firstRow, lastRow, firstCol, lastCol)
@@ -119,9 +121,10 @@ public class RowBuilder<T> extends SheetBuilderHelper<RowBuilder<T>> {
 				.setBorder(header.getBorder())
 				.setBorderColor(header.getBorderColor())
 				.addMergedRegion()
-				.setCommentText(header.getComment())
-				.setCommentAuthor(header.getCommentAuthor())
-				.setCommentSize(header.getCommentWidth(), header.getCommentHeight())
+				.createCellComment(header.getComment(),
+					header.getCommentAuthor(),
+					header.getCommentWidth(),
+					header.getCommentHeight())
 				.setCellValue(header.getValue());
 		}
 	}
