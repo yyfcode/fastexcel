@@ -86,30 +86,35 @@ public class SheetBuilder extends SheetBuilderHelper<SheetBuilder> {
 	/**
 	 * 行构建器
 	 */
-	public <T> RowBuilder<T> rowType(Class<T> type) {
+	public <T> RowBuilderHelper<T> rowType(Class<T> type) {
 		Assert.notNull(type, "Type must not be null");
-		return new RowBuilder<>(this, type);
+		return new RowBuilderHelper<>(this, type);
+	}
+
+	/**
+	 * 结束工作表
+	 */
+	public WorkbookBuilder end() {
+		setSheetStyle(sheet);
+		return parent;
 	}
 
 	/**
 	 * 创建工作表
 	 */
 	public SheetBuilder createSheet() {
-		setSheetStyle(sheet);
-		return parent.createSheet();
+		return end().createSheet();
 	}
 
 	/**
 	 * 创建工作表
 	 */
 	public SheetBuilder createSheet(String sheetName) {
-		setSheetStyle(sheet);
-		return parent.createSheet(sheetName);
+		return end().createSheet(sheetName);
 	}
 
 	public Workbook build() {
-		setSheetStyle(sheet);
-		return parent.build();
+		return end().build();
 	}
 
 	@Override

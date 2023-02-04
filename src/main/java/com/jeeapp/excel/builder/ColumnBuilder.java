@@ -4,13 +4,13 @@ package com.jeeapp.excel.builder;
  * @author Justice
  * @since 0.0.2
  */
-public class ColumnBuilderHelper<B extends ColumnBuilderHelper<B, P>, P extends SheetBuilderHelper<P>> extends CellStyleBuilder<B, P> {
+public class ColumnBuilder<B extends ColumnBuilder<B, P>, P extends SheetBuilderHelper<P>> extends CellStyleBuilder<B, P> {
 
 	private final P parent;
 
 	private final int column;
 
-	protected ColumnBuilderHelper(P parent, int column) {
+	protected ColumnBuilder(P parent, int column) {
 		super(parent, (short) column);
 		this.parent = parent;
 		this.column = column;

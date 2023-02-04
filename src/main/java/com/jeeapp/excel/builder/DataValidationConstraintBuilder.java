@@ -13,7 +13,7 @@ import org.apache.poi.ss.util.CellRangeAddressList;
  * @since 0.0.2
  */
 @SuppressWarnings("unchecked")
-public class DataValidationBuilderHelper<B extends DataValidationBuilderHelper<B, P>, P extends SheetBuilderHelper<P>> extends CellStyleBuilder<B, P> {
+public class DataValidationConstraintBuilder<B extends DataValidationConstraintBuilder<B, P>, P extends SheetBuilderHelper<P>> extends CellStyleBuilder<B, P> {
 
 	private final P parent;
 
@@ -23,7 +23,7 @@ public class DataValidationBuilderHelper<B extends DataValidationBuilderHelper<B
 
 	private final CellRangeAddressList regions;
 
-	protected DataValidationBuilderHelper(P parent, int firstRow, int lastRow, int firstCol, int lastCol) {
+	protected DataValidationConstraintBuilder(P parent, int firstRow, int lastRow, int firstCol, int lastCol) {
 		super(parent, firstRow, lastRow, firstCol, lastCol);
 		this.parent = parent;
 		this.dataValidationHelper = parent.sheet.getDataValidationHelper();

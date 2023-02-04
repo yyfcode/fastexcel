@@ -9,7 +9,7 @@ import org.apache.poi.ss.util.SheetUtil;
 /**
  * @author justice
  */
-public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends DataValidationBuilderHelper<CellRangeBuilder<P>, P> {
+public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends DataValidationConstraintBuilder<CellRangeBuilder<P>, P> {
 
 	private final P parent;
 
@@ -35,7 +35,7 @@ public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends DataValid
 	 */
 	public P addMergedRegion() {
 		P parent = end();
-		parent.addMergedRegion(new CellRangeAddress(firstRow, lastRow, firstCol, lastCol));
+		parent.addMergedRegion(firstRow, lastRow, firstCol, lastCol);
 		Cell cell = SheetUtil.getCell(parent.sheet, firstRow, firstCol);
 		if (cell != null) {
 			parent.setCellStyle(cell);

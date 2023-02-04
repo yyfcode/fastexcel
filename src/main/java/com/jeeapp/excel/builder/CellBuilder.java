@@ -12,7 +12,7 @@ import org.apache.poi.ss.util.SheetUtil;
  * @author Justice
  * @since 0.0.2
  */
-public class CellBuilder<P extends SheetBuilderHelper<P>> extends DataValidationBuilderHelper<CellBuilder<P>, P> {
+public class CellBuilder<P extends SheetBuilderHelper<P>> extends DataValidationConstraintBuilder<CellBuilder<P>, P> {
 
 	private final P parent;
 

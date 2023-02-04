@@ -5,7 +5,6 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellAddress;
-import org.apache.poi.ss.util.CellRangeAddress;
 import com.jeeapp.excel.util.CellUtils;
 
 /**
@@ -109,34 +108,26 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	}
 
 	/**
-	 * 添加合并区域
-	 */
-	public B addMergedRegion(int firstRow, int lastRow, int firstCol, int lastCol) {
-		 addMergedRegion(new CellRangeAddress(firstRow, lastRow, firstCol, lastCol));
-		 return self();
-	}
-
-	/**
 	 * 匹配最后一行
 	 */
-	public RowBuilderHelper<?, B> matchingRow() {
-		return new RowBuilderHelper<>(self(), sheet.getLastRowNum());
+	public RowBuilder<?, B> matchingRow() {
+		return new RowBuilder<>(self(), sheet.getLastRowNum());
 	}
 
 	/**
 	 * 匹配行
 	 */
 	@Override
-	public RowBuilderHelper<?, B> matchingRow(int row) {
-		return new RowBuilderHelper<>(self(), row);
+	public RowBuilder<?, B> matchingRow(int row) {
+		return new RowBuilder<>(self(), row);
 	}
 
 	/**
 	 * 匹配列
 	 */
 	@Override
-	public ColumnBuilderHelper<?, B> matchingColumn(int column) {
-		return new ColumnBuilderHelper<>(self(), column);
+	public ColumnBuilder<?, B> matchingColumn(int column) {
+		return new ColumnBuilder<>(self(), column);
 	}
 
 	/**
@@ -159,7 +150,7 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	public CellBuilder<B> matchingCell() {
 		int lastRowNum = sheet.getLastRowNum() == -1 ? 0 : sheet.getLastRowNum();
 		Row row = sheet.getRow(lastRowNum);
-		if(row == null){
+		if (row == null) {
 			row = sheet.createRow(lastRowNum);
 		}
 		short lastCellNum = row.getLastCellNum() == -1 ? 0 : row.getLastCellNum();

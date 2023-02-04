@@ -91,8 +91,15 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 		return self();
 	}
 
-	protected abstract B self();
+	/**
+	 * 添加合并区域
+	 */
+	public B addMergedRegion(int firstRow, int lastRow, int firstCol, int lastCol) {
+		this.properties.mergedRegions.addCellRangeAddress(new CellRangeAddress(firstRow, lastRow, firstCol, lastCol));
+		return self();
+	}
 
+	protected abstract B self();
 
 	/**
 	 * 设置表样式
@@ -254,13 +261,6 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 			&& cell.getRowIndex() <= region.getLastRow(), properties);
 	}
 
-	/**
-	 * 添加全局样式
-	 */
-	protected void addMergedRegion(CellRangeAddress region) {
-		this.properties.mergedRegions.addCellRangeAddress(region);
-	}
-
 	@Getter
 	@Setter
 	protected static class CommonProperties {
@@ -269,9 +269,9 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 
 		private Integer height;
 
-		private Map<String, Object> commonStyles = new LinkedHashMap<>();
-
 		private CellRangeAddressList mergedRegions = new CellRangeAddressList();
+
+		private Map<String, Object> commonStyles = new LinkedHashMap<>();
 
 		private Map<Predicate<Cell>, Map<String, Object>> customStyles = new LinkedHashMap<>();
 
