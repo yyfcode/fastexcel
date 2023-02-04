@@ -9,7 +9,6 @@ import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Drawing;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.util.CellRangeAddress;
 import org.springframework.util.Assert;
 import com.jeeapp.excel.model.Comment;
 import com.jeeapp.excel.model.Row;
@@ -63,14 +62,6 @@ public class SheetBuilder extends SheetBuilderHelper<SheetBuilder> {
 	 */
 	public SheetBuilder setColumnWidth(int column, int width) {
 		sheet.setColumnWidth(column, width * 256);
-		return this;
-	}
-
-	/**
-	 * 添加合并区域
-	 */
-	public SheetBuilder addMergedRegion(int firstRow, int lastRow, int firstCol, int lastCol) {
-		addMergedRegion(new CellRangeAddress(firstRow, lastRow, firstCol, lastCol));
 		return this;
 	}
 

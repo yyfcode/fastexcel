@@ -40,7 +40,7 @@ public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends DataValid
 		if (cell != null) {
 			parent.setCellStyle(cell);
 		}
-		return end();
+		return parent;
 	}
 
 	/**

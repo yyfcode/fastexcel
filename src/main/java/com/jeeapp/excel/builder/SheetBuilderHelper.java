@@ -5,6 +5,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellAddress;
+import org.apache.poi.ss.util.CellRangeAddress;
 import com.jeeapp.excel.util.CellUtils;
 
 /**
@@ -19,29 +20,6 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	protected SheetBuilderHelper(CellBuilderHelper<?> parent, Sheet sheet) {
 		super(parent);
 		this.sheet = sheet;
-	}
-
-	/**
-	 * 匹配最后一行
-	 */
-	public RowBuilderHelper<?, B> matchingRow() {
-		return new RowBuilderHelper<>(self(), sheet.getLastRowNum());
-	}
-
-	/**
-	 * 匹配行
-	 */
-	@Override
-	public RowBuilderHelper<?, B> matchingRow(int row) {
-		return new RowBuilderHelper<>(self(), row);
-	}
-
-	/**
-	 * 匹配列
-	 */
-	@Override
-	public ColumnBuilderHelper<?, B> matchingColumn(int column) {
-		return new ColumnBuilderHelper<>(self(), column);
 	}
 
 	/**
@@ -128,6 +106,37 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	 */
 	public B createCell(int row, int column) {
 		return createCell(row, column, null);
+	}
+
+	/**
+	 * 添加合并区域
+	 */
+	public B addMergedRegion(int firstRow, int lastRow, int firstCol, int lastCol) {
+		 addMergedRegion(new CellRangeAddress(firstRow, lastRow, firstCol, lastCol));
+		 return self();
+	}
+
+	/**
+	 * 匹配最后一行
+	 */
+	public RowBuilderHelper<?, B> matchingRow() {
+		return new RowBuilderHelper<>(self(), sheet.getLastRowNum());
+	}
+
+	/**
+	 * 匹配行
+	 */
+	@Override
+	public RowBuilderHelper<?, B> matchingRow(int row) {
+		return new RowBuilderHelper<>(self(), row);
+	}
+
+	/**
+	 * 匹配列
+	 */
+	@Override
+	public ColumnBuilderHelper<?, B> matchingColumn(int column) {
+		return new ColumnBuilderHelper<>(self(), column);
 	}
 
 	/**

@@ -93,6 +93,7 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 
 	protected abstract B self();
 
+
 	/**
 	 * 设置表样式
 	 */
@@ -116,7 +117,7 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 	/**
 	 * 设置行样式，行样式并不包含全局样式，需要单独设置
 	 */
-	protected void setRowStyle(Sheet sheet, Row row) {
+	private void setRowStyle(Sheet sheet, Row row) {
 		int rowNum = row.getRowNum();
 		Map<String, Object> properties = new HashMap<>();
 		if (this.properties.rowStyles.containsKey(rowNum)) {
@@ -130,7 +131,7 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 	/**
 	 * 设置列样式，列样式并不包含全局样式，需要单独设置
 	 */
-	protected void setColumnStyle(Sheet sheet, int column) {
+	private void setColumnStyle(Sheet sheet, int column) {
 		Map<String, Object> properties = new HashMap<>();
 		if (this.properties.columnStyles.containsKey(column)) {
 			properties.putAll(this.properties.columnStyles.get(column));
@@ -143,7 +144,7 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 	/**
 	 * 设置区域样式
 	 */
-	protected void setRegionStyle(Sheet sheet, CellRangeAddress region) {
+	private void setRegionStyle(Sheet sheet, CellRangeAddress region) {
 		Map<String, Object> properties = new HashMap<>(this.properties.commonStyles);
 		if (this.properties.regionStyles.containsKey(region)) {
 			properties.putAll(this.properties.regionStyles.get(region));
