@@ -184,13 +184,24 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 	/**
 	 * init sheet
 	 */
-	protected void initSheet(Sheet sheet) {
+	protected Sheet initSheet(Sheet sheet) {
 		if (properties.width != null) {
 			sheet.setDefaultColumnWidth(properties.width);
 		}
 		if (properties.height != null) {
 			sheet.setDefaultRowHeightInPoints(properties.height);
 		}
+		return sheet;
+	}
+
+	/**
+	 * init row
+	 */
+	protected Row initRow(Row row) {
+		if (properties.height != null) {
+			row.setHeightInPoints(properties.height);
+		}
+		return row;
 	}
 
 	/**

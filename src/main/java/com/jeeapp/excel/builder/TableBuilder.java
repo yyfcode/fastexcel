@@ -20,7 +20,6 @@ import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.poi.ss.usermodel.DataValidationConstraint.ValidationType;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -30,6 +29,7 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.PropertyAccessorFactory;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import com.jeeapp.excel.annotation.ExcelProperty;
 import com.jeeapp.excel.model.Cell;
@@ -39,9 +39,11 @@ import com.jeeapp.excel.model.Column;
  * @author justice
  */
 @Slf4j
-public class RowBuilderHelper<T> extends SheetBuilderHelper<RowBuilderHelper<T>> {
+public class TableBuilder<T> extends SheetBuilderHelper<SheetBuilder> {
 
 	public static final Map<Class<?>, List<Field>> FIELDS_CACHE = new ConcurrentHashMap<>();
+
+	public static final Map<Class<?>, List<String>> PROPERTIES_CACHE = new ConcurrentHashMap<>();
 
 	private final Class<T> type;
 
@@ -55,11 +57,11 @@ public class RowBuilderHelper<T> extends SheetBuilderHelper<RowBuilderHelper<T>>
 
 	private int thisCol = -1;
 
-	protected RowBuilderHelper(SheetBuilder parent, Class<T> type) {
+	protected TableBuilder(SheetBuilder parent, Class<T> type) {
 		super(parent, parent.sheet);
 		this.parent = parent;
 		this.type = type;
-		this.properties = getProperties(null, type);
+		this.properties = getProperties(type);
 	}
 
 	/**
@@ -84,7 +86,7 @@ public class RowBuilderHelper<T> extends SheetBuilderHelper<RowBuilderHelper<T>>
 			.matchingColumn(firstCol)
 			.setDataFormat(header.getFormat())
 			.setColumnHidden(header.getHidden())
-			.end();
+			.addCellStyle();
 		// data validation
 		if (header.getValidationType() > ValidationType.ANY && header.getValidationType() <= ValidationType.FORMULA) {
 			parent.matchingRegion(this.lastRow + 1, parent.maxRows - this.lastRow - 1, lastCol, lastCol)
@@ -99,7 +101,7 @@ public class RowBuilderHelper<T> extends SheetBuilderHelper<RowBuilderHelper<T>>
 				.showErrorBox(header.isShowErrorBox(), header.getErrorBoxTitle(), header.getErrorBoxText())
 				.showPromptBox(header.isShowPromptBox(), header.getPromptBoxTitle(), header.getPromptBoxText())
 				.addValidationData()
-				.end();
+				.addCellStyle();
 		}
 		// cell comment
 		if (StringUtils.isNotBlank(header.getComment())) {
@@ -134,8 +136,8 @@ public class RowBuilderHelper<T> extends SheetBuilderHelper<RowBuilderHelper<T>>
 		}
 	}
 
-	public RowBuilderHelper<T> createRow(T object) {
-		Validate.notNull(object, "object must be not null");
+	public TableBuilder<T> createRow(T object) {
+		Assert.notNull(object, "object must be not null");
 		thisRow = parent.sheet.getLastRowNum() + 1;
 		lastRow = thisRow;
 		List<Cell> cells = resolveCells(object);
@@ -157,8 +159,7 @@ public class RowBuilderHelper<T> extends SheetBuilderHelper<RowBuilderHelper<T>>
 			maxCol = Math.max(lastCol, maxCol);
 		}
 		// 填充未定义的单元
-		parent.matchingRegion(thisRow, maxRow, 0, maxCol)
-			.fillUndefinedCells();
+		parent.matchingRegion(thisRow, maxRow, 0, maxCol).fillUndefinedCells();
 		return this;
 	}
 
@@ -167,7 +168,7 @@ public class RowBuilderHelper<T> extends SheetBuilderHelper<RowBuilderHelper<T>>
 	 * @deprecated use {@link SheetBuilder#matchingCell(CellAddress)} instead.
 	 */
 	@Deprecated
-	public RowBuilderHelper<T> createCellComment(String comment, String author, int col1, int row2, int col2) {
+	public TableBuilder<T> createCellComment(String comment, String author, int col1, int row2, int col2) {
 		parent.createCellComment(comment, author, thisRow, col1, row2, col2);
 		return this;
 	}
@@ -175,7 +176,7 @@ public class RowBuilderHelper<T> extends SheetBuilderHelper<RowBuilderHelper<T>>
 	/**
 	 * 对象行
 	 */
-	public RowBuilderHelper<T> createRows(Collection<T> beans) {
+	public TableBuilder<T> createRows(Collection<T> beans) {
 		if (CollectionUtils.isNotEmpty(beans)) {
 			for (T bean : beans) {
 				createRow(bean);
@@ -187,7 +188,7 @@ public class RowBuilderHelper<T> extends SheetBuilderHelper<RowBuilderHelper<T>>
 	/**
 	 * 创建表头
 	 */
-	public RowBuilderHelper<T> createHeader(String... names) {
+	public TableBuilder<T> createHeader(String... names) {
 		if (ArrayUtils.isNotEmpty(names)) {
 			// 只保留指定属性，包含子属性
 			properties.removeIf(property -> !matchesProperty(Arrays.asList(names), property));
@@ -201,16 +202,10 @@ public class RowBuilderHelper<T> extends SheetBuilderHelper<RowBuilderHelper<T>>
 		return this;
 	}
 
-	/**
-	 * 创建工作表
-	 */
 	public SheetBuilder createSheet() {
 		return parent.createSheet();
 	}
 
-	/**
-	 * 创建工作表
-	 */
 	public SheetBuilder createSheet(String sheetName) {
 		return parent.createSheet(sheetName);
 	}
@@ -224,15 +219,8 @@ public class RowBuilderHelper<T> extends SheetBuilderHelper<RowBuilderHelper<T>>
 	}
 
 	@Override
-	protected RowBuilderHelper<T> self() {
-		return this;
-	}
-
-	/**
-	 * 行构建器
-	 */
-	public <B> RowBuilderHelper<B> rowType(Class<B> type) {
-		return parent.rowType(type);
+	protected SheetBuilder self() {
+		return parent;
 	}
 
 	/**
@@ -247,7 +235,7 @@ public class RowBuilderHelper<T> extends SheetBuilderHelper<RowBuilderHelper<T>>
 	 */
 	private List<Column> resolveHeaders(Column column, Class<?> type) {
 		List<Column> headers = new ArrayList<>();
-		for (Field field : getExcelFields(type)) {
+		for (Field field : getFields(type)) {
 			Class<?> fieldType = field.getType();
 			String property = column == null ? field.getName() : column.getName() + "." + field.getName();
 			if (!matchesProperty(properties, property)) {
@@ -331,7 +319,7 @@ public class RowBuilderHelper<T> extends SheetBuilderHelper<RowBuilderHelper<T>>
 		Map<String, Integer> nestedPropertyPathRowCount) {
 		List<Cell> cells = new ArrayList<>();
 		BeanWrapper beanWrapper = PropertyAccessorFactory.forBeanPropertyAccess(target);
-		for (Field field : getExcelFields(beanWrapper.getWrappedClass())) {
+		for (Field field : getFields(beanWrapper.getWrappedClass())) {
 			Class<?> propertyType = field.getType();
 			String propertyName = parentPropertyPath + field.getName();
 			String property = RegExUtils.removeAll(propertyName, "\\[(.*?)]");
@@ -390,11 +378,18 @@ public class RowBuilderHelper<T> extends SheetBuilderHelper<RowBuilderHelper<T>>
 	}
 
 	/**
+	 * 从缓存中获取所有属性
+	 */
+	private List<String> getProperties(Class<?> type) {
+		return new ArrayList<>(PROPERTIES_CACHE.computeIfAbsent(type, key -> getProperties(null, type)));
+	}
+
+	/**
 	 * 获取所有属性
 	 */
-	private static List<String> getProperties(String parentProperty, Class<?> type) {
+	private List<String> getProperties(String parentProperty, Class<?> type) {
 		List<String> properties = new ArrayList<>();
-		for (Field field : getExcelFields(type)) {
+		for (Field field : getFields(type)) {
 			Class<?> fieldType = field.getType();
 			String property = parentProperty == null ? field.getName() : parentProperty + "." + field.getName();
 			if (!BeanUtils.isSimpleProperty(fieldType)) {
@@ -414,7 +409,7 @@ public class RowBuilderHelper<T> extends SheetBuilderHelper<RowBuilderHelper<T>>
 	/**
 	 * 获取字段
 	 */
-	private static List<Field> getExcelFields(Class<?> type) {
+	private List<Field> getFields(Class<?> type) {
 		return FIELDS_CACHE.computeIfAbsent(type, key -> FieldUtils.getAllFieldsList(type)
 			.stream()
 			.filter(field -> {
@@ -434,12 +429,6 @@ public class RowBuilderHelper<T> extends SheetBuilderHelper<RowBuilderHelper<T>>
 				}
 				return annotation.column();
 			})).collect(Collectors.toList()));
-	}
-
-	@Override
-	public RowBuilderHelper<T> addMergedRegion(int firstRow, int lastRow, int firstCol, int lastCol) {
-		parent.addMergedRegion(firstRow, lastRow, firstCol, lastCol);
-		return this;
 	}
 
 	@Data

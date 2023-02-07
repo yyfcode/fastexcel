@@ -1,6 +1,10 @@
 package com.jeeapp.excel.builder;
 
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.util.CellAddress;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.SheetUtil;
 
 /**
  * @author Justice
@@ -37,10 +41,23 @@ public class RowBuilder<B extends RowBuilder<B, P>, P extends SheetBuilderHelper
 	}
 
 	/**
-	 * 设置折叠
+	 * 添加样式
 	 */
-	public B setRowGroupCollapsed(boolean collapse) {
-		parent.sheet.setRowGroupCollapsed(rowNum, collapse);
-		return self();
+	@Override
+	public P addCellStyle() {
+		P parent = super.addCellStyle();
+		Row row = parent.sheet.getRow(rowNum);
+		if (row != null) {
+			short lastCellNum = row.getLastCellNum();
+			if (lastCellNum > -1) {
+				for (CellAddress cellAddress : new CellRangeAddress(rowNum, rowNum, 0, lastCellNum)) {
+					Cell cell = SheetUtil.getCellWithMerges(parent.sheet, cellAddress.getRow(), cellAddress.getColumn());
+					if (cell != null) {
+						parent.setCellStyle(cell);
+					}
+				}
+			}
+		}
+		return parent;
 	}
 }

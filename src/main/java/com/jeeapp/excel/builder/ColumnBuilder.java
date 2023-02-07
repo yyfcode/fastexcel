@@ -1,5 +1,10 @@
 package com.jeeapp.excel.builder;
 
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.util.CellAddress;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.SheetUtil;
+
 /**
  * @author Justice
  * @since 0.0.2
@@ -46,5 +51,23 @@ public class ColumnBuilder<B extends ColumnBuilder<B, P>, P extends SheetBuilder
 	public B setColumnHidden(boolean hidden) {
 		parent.sheet.setColumnHidden(column, hidden);
 		return self();
+	}
+
+	/**
+	 * 添加样式
+	 */
+	@Override
+	public P addCellStyle() {
+		P parent = super.addCellStyle();
+		int lastRowNum = parent.sheet.getLastRowNum();
+		if (lastRowNum > -1) {
+			for (CellAddress cellAddress : new CellRangeAddress(0, lastRowNum, column, column)) {
+				Cell cell = SheetUtil.getCellWithMerges(parent.sheet, cellAddress.getRow(), cellAddress.getColumn());
+				if (cell != null) {
+					parent.setCellStyle(cell);
+				}
+			}
+		}
+		return parent;
 	}
 }

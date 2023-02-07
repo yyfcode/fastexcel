@@ -386,7 +386,7 @@ public class CellStyleBuilder<B extends CellStyleBuilder<B, P>, P extends CellBu
 		return (B) this;
 	}
 
-	public P end() {
+	public P addCellStyle() {
 		if (properties.isEmpty()) {
 			return parent;
 		}

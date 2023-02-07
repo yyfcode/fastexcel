@@ -9,7 +9,7 @@ import org.apache.poi.ss.util.SheetUtil;
 /**
  * @author justice
  */
-public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends DataValidationConstraintBuilder<CellRangeBuilder<P>, P> {
+public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends DataValidationBuilder<CellRangeBuilder<P>, P> {
 
 	private final P parent;
 
@@ -31,10 +31,24 @@ public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends DataValid
 	}
 
 	/**
+	 * 创建图片
+	 */
+	public CellRangeBuilder<P> createPicture(byte[] pictureData, int format) {
+		ClientAnchor clientAnchor = parent.creationHelper.createClientAnchor();
+		clientAnchor.setRow1(firstRow);
+		clientAnchor.setCol1(firstCol);
+		clientAnchor.setRow2(lastRow + 1);
+		clientAnchor.setCol2(lastCol + 1);
+		int pictureIndex = parent.workbook.addPicture(pictureData, format);
+		parent.sheet.getDrawingPatriarch().createPicture(clientAnchor, pictureIndex);
+		return this;
+	}
+
+	/**
 	 * 添加合并区域
 	 */
 	public P addMergedRegion() {
-		P parent = end();
+		P parent = addCellStyle();
 		parent.addMergedRegion(firstRow, lastRow, firstCol, lastCol);
 		Cell cell = SheetUtil.getCell(parent.sheet, firstRow, firstCol);
 		if (cell != null) {
@@ -46,8 +60,9 @@ public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends DataValid
 	/**
 	 * 添加样式
 	 */
+	@Override
 	public P addCellStyle() {
-		P parent = end();
+		P parent = super.addCellStyle();
 		for (CellAddress cellAddress : new CellRangeAddress(firstRow, lastRow, firstCol, lastCol)) {
 			Cell cell = SheetUtil.getCellWithMerges(parent.sheet, cellAddress.getRow(), cellAddress.getColumn());
 			if (cell != null) {
@@ -58,24 +73,10 @@ public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends DataValid
 	}
 
 	/**
-	 * 创建图片
-	 */
-	public CellRangeBuilder<P> createPicture(byte[] pictureData, int format) {
-		ClientAnchor clientAnchor = creationHelper.createClientAnchor();
-		clientAnchor.setRow1(firstRow);
-		clientAnchor.setCol1(firstCol);
-		clientAnchor.setRow2(lastRow + 1);
-		clientAnchor.setCol2(lastCol + 1);
-		int pictureIndex = parent.workbook.addPicture(pictureData, format);
-		parent.sheet.getDrawingPatriarch().createPicture(clientAnchor, pictureIndex);
-		return this;
-	}
-
-	/**
 	 * 填充未定义的单元格
 	 */
 	public P fillUndefinedCells() {
-		P parent = end();
+		P parent = addCellStyle();
 		for (CellAddress cellAddress : new CellRangeAddress(firstRow, lastRow, firstCol, lastCol)) {
 			Cell cell = SheetUtil.getCellWithMerges(parent.sheet, cellAddress.getRow(), cellAddress.getColumn());
 			if (cell == null) {

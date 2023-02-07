@@ -12,7 +12,7 @@ import org.apache.poi.ss.util.SheetUtil;
  * @author Justice
  * @since 0.0.2
  */
-public class CellBuilder<P extends SheetBuilderHelper<P>> extends DataValidationConstraintBuilder<CellBuilder<P>, P> {
+public class CellBuilder<P extends SheetBuilderHelper<P>> extends DataValidationBuilder<CellBuilder<P>, P> {
 
 	private final P parent;
 
@@ -33,8 +33,8 @@ public class CellBuilder<P extends SheetBuilderHelper<P>> extends DataValidation
 	}
 
 	public CellBuilder<P> createCellComment(String text, String author, int width, int height) {
-		ClientAnchor clientAnchor = creationHelper.createClientAnchor();
-		RichTextString string = creationHelper.createRichTextString(text);
+		ClientAnchor clientAnchor = parent.creationHelper.createClientAnchor();
+		RichTextString string = parent.creationHelper.createRichTextString(text);
 		clientAnchor.setRow1(cellAddress.getRow());
 		clientAnchor.setCol1(cellAddress.getColumn());
 		clientAnchor.setRow2(cellAddress.getRow() + width);
@@ -47,7 +47,7 @@ public class CellBuilder<P extends SheetBuilderHelper<P>> extends DataValidation
 	}
 
 	public CellBuilder<P> createPicture(byte[] pictureData, int format) {
-		ClientAnchor clientAnchor = creationHelper.createClientAnchor();
+		ClientAnchor clientAnchor = parent.creationHelper.createClientAnchor();
 		clientAnchor.setRow1(cellAddress.getRow());
 		clientAnchor.setCol1(cellAddress.getColumn());
 		clientAnchor.setRow2(cellAddress.getRow() + 1);
@@ -61,22 +61,23 @@ public class CellBuilder<P extends SheetBuilderHelper<P>> extends DataValidation
 	 * 设置单元格值
 	 */
 	public P setCellValue(Object value) {
-		return end().createCell(cellAddress, value);
+		return addCellStyle().createCell(cellAddress, value);
 	}
 
 	/**
 	 * 设置空单元
 	 */
 	public P setBlank() {
-		return end().createCell(cellAddress);
+		return addCellStyle().createCell(cellAddress);
 	}
 
 	/**
 	 * 添加样式
 	 */
+	@Override
 	public P addCellStyle() {
-		P parent = end();
-		Cell cell = SheetUtil.getCell(parent.sheet, cellAddress.getRow(), cellAddress.getColumn());
+		P parent = super.addCellStyle();
+		Cell cell = SheetUtil.getCellWithMerges(parent.sheet, cellAddress.getRow(), cellAddress.getColumn());
 		if (cell != null) {
 			parent.setCellStyle(cell);
 		}

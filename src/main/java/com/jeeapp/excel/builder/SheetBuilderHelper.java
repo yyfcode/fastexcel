@@ -2,6 +2,9 @@ package com.jeeapp.excel.builder;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.DataValidationHelper;
+import org.apache.poi.ss.usermodel.Drawing;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellAddress;
@@ -16,16 +19,31 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 
 	protected final Sheet sheet;
 
+	protected final int maxRows;
+
+	protected final int maxColumns;
+
+	protected final Drawing<?> drawing;
+
+	protected final CreationHelper creationHelper;
+
+	protected final DataValidationHelper dataValidationHelper;
+
 	protected SheetBuilderHelper(CellBuilderHelper<?> parent, Sheet sheet) {
 		super(parent);
-		this.sheet = sheet;
+		this.drawing = sheet.createDrawingPatriarch();
+		this.creationHelper = workbook.getCreationHelper();
+		this.dataValidationHelper = sheet.getDataValidationHelper();
+		this.maxRows = workbook.getSpreadsheetVersion().getMaxRows();
+		this.maxColumns = workbook.getSpreadsheetVersion().getMaxColumns();
+		this.sheet = initSheet(sheet);
 	}
 
 	/**
 	 * 创建空行
 	 */
 	public B createRow() {
-		sheet.createRow(sheet.getLastRowNum() + 1);
+		initRow(sheet.createRow(sheet.getLastRowNum() + 1));
 		return self();
 	}
 
@@ -57,7 +75,7 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 		int lastRowNum = sheet.getLastRowNum() == -1 ? 0 : sheet.getLastRowNum();
 		Row row = sheet.getRow(lastRowNum);
 		if (row == null) {
-			row = sheet.createRow(lastRowNum);
+			row = initRow(sheet.createRow(lastRowNum));
 		}
 		int lastCellNum = row.getLastCellNum() == -1 ? 0 : row.getLastCellNum();
 		Cell cell = row.getCell(lastCellNum);
@@ -75,7 +93,7 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	public B createCell(CellAddress cellAddress, Object value) {
 		Row row = sheet.getRow(cellAddress.getRow());
 		if (row == null) {
-			row = sheet.createRow(cellAddress.getRow());
+			row = initRow(sheet.createRow(cellAddress.getRow()));
 		}
 		Cell cell = row.getCell(cellAddress.getColumn());
 		if (cell == null) {
@@ -110,7 +128,7 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	/**
 	 * 匹配最后一行
 	 */
-	public RowBuilder<?, B> matchingRow() {
+	public RowBuilder<?, B> matchingLastRow() {
 		return new RowBuilder<>(self(), sheet.getLastRowNum());
 	}
 
@@ -147,11 +165,11 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	/**
 	 * 匹配最后一个单元格
 	 */
-	public CellBuilder<B> matchingCell() {
+	public CellBuilder<B> matchingLastCell() {
 		int lastRowNum = sheet.getLastRowNum() == -1 ? 0 : sheet.getLastRowNum();
 		Row row = sheet.getRow(lastRowNum);
 		if (row == null) {
-			row = sheet.createRow(lastRowNum);
+			row = initRow(sheet.createRow(lastRowNum));
 		}
 		short lastCellNum = row.getLastCellNum() == -1 ? 0 : row.getLastCellNum();
 		Cell cell = row.getCell(lastCellNum);
@@ -159,6 +177,39 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 			cell = row.createCell(lastCellNum);
 		}
 		return matchingCell(new CellAddress(cell));
+	}
+
+	/**
+	 * 匹配最后一行上的单元格
+	 */
+	public CellBuilder<B> matchingLastRowCell(int column) {
+		return matchingCell(new CellAddress(sheet.getLastRowNum(), column));
+	}
+
+	/**
+	 * 设置默认列宽
+	 */
+	@Override
+	public B setDefaultColumnWidth(int width) {
+		sheet.setDefaultColumnWidth(width);
+		return self();
+	}
+
+	/**
+	 * 设置默认行高
+	 */
+	@Override
+	public B setDefaultRowHeight(int height) {
+		sheet.setDefaultRowHeightInPoints(height);
+		return self();
+	}
+
+	/**
+	 * 设置列宽
+	 */
+	public B setColumnWidth(int column, int width) {
+		sheet.setColumnWidth(column, width * 256);
+		return self();
 	}
 
 	/**
@@ -182,17 +233,17 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	public B createCellComment(String comment, String author, int row1, int col1, int row2, int col2) {
 		return matchingCell(new CellAddress(row1, col1))
 			.createCellComment(comment, author, row2, col2)
-			.end();
+			.addCellStyle();
 	}
 
 	/**
 	 * 当前单元格添加批注
-	 * @deprecated use {@link SheetBuilderHelper#matchingCell()} instead.
+	 * @deprecated use {@link SheetBuilderHelper#matchingLastCell()} instead.
 	 */
 	@Deprecated
 	public B createCellComment(String comment, String author, int row2, int col2) {
-		return matchingCell()
+		return matchingLastCell()
 			.createCellComment(comment, author, row2, col2)
-			.end();
+			.addCellStyle();
 	}
 }

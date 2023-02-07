@@ -30,7 +30,7 @@ public class WorkbookBuilder extends CellBuilderHelper<WorkbookBuilder> {
 			.setFontName("微软雅黑")
 			.setVerticalAlignment(VerticalAlignment.CENTER)
 			.setAlignment(HorizontalAlignment.CENTER)
-			.end();
+			.addCellStyle();
 	}
 
 	/**
