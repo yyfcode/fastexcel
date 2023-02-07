@@ -82,10 +82,10 @@ public class TableBuilder<T> extends SheetBuilderHelper<SheetBuilder> {
 
 		// data format
 		int width = header.getWidth() == 8 ? parent.sheet.getDefaultColumnWidth() : header.getWidth();
-		parent.setColumnWidth(firstCol, width)
-			.matchingColumn(firstCol)
-			.setDataFormat(header.getFormat())
+		parent.matchingColumn(firstCol)
+			.setColumnWidth(width)
 			.setColumnHidden(header.getHidden())
+			.setDataFormat(header.getFormat())
 			.addCellStyle();
 		// data validation
 		if (header.getValidationType() > ValidationType.ANY && header.getValidationType() <= ValidationType.FORMULA) {
@@ -100,8 +100,7 @@ public class TableBuilder<T> extends SheetBuilderHelper<SheetBuilder> {
 				.setErrorStyle(header.getErrorStyle())
 				.showErrorBox(header.isShowErrorBox(), header.getErrorBoxTitle(), header.getErrorBoxText())
 				.showPromptBox(header.isShowPromptBox(), header.getPromptBoxTitle(), header.getPromptBoxText())
-				.addValidationData()
-				.addCellStyle();
+				.addValidationData();
 		}
 		// cell comment
 		if (StringUtils.isNotBlank(header.getComment())) {

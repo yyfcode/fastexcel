@@ -58,17 +58,25 @@ public class CellBuilder<P extends SheetBuilderHelper<P>> extends DataValidation
 	}
 
 	/**
+	 * 活动单元格
+	 */
+	public CellBuilder<P> setActiveCell() {
+		parent.sheet.setActiveCell(cellAddress);
+		return self();
+	}
+
+	/**
 	 * 设置单元格值
 	 */
 	public P setCellValue(Object value) {
-		return addCellStyle().createCell(cellAddress, value);
+		return super.addCellStyle().createCell(cellAddress, value);
 	}
 
 	/**
 	 * 设置空单元
 	 */
 	public P setBlank() {
-		return addCellStyle().createCell(cellAddress);
+		return super.addCellStyle().createCell(cellAddress);
 	}
 
 	/**

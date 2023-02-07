@@ -48,9 +48,9 @@ public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends DataValid
 	 * 添加合并区域
 	 */
 	public P addMergedRegion() {
-		P parent = addCellStyle();
+		P parent = super.addCellStyle();
 		parent.addMergedRegion(firstRow, lastRow, firstCol, lastCol);
-		Cell cell = SheetUtil.getCell(parent.sheet, firstRow, firstCol);
+		Cell cell = SheetUtil.getCellWithMerges(parent.sheet, firstRow, firstCol);
 		if (cell != null) {
 			parent.setCellStyle(cell);
 		}
@@ -76,7 +76,7 @@ public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends DataValid
 	 * 填充未定义的单元格
 	 */
 	public P fillUndefinedCells() {
-		P parent = addCellStyle();
+		P parent = super.addCellStyle();
 		for (CellAddress cellAddress : new CellRangeAddress(firstRow, lastRow, firstCol, lastCol)) {
 			Cell cell = SheetUtil.getCellWithMerges(parent.sheet, cellAddress.getRow(), cellAddress.getColumn());
 			if (cell == null) {

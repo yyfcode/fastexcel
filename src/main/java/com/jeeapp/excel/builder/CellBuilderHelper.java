@@ -169,7 +169,6 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 		CellAddress cellAddress = new CellAddress(cell);
 		if (this.properties.cellStyles.containsKey(cellAddress)) {
 			properties.putAll(this.properties.cellStyles.get(cellAddress));
-			this.properties.cellStyles.remove(cellAddress);
 		}
 		for (Predicate<Cell> predicate : this.properties.customStyles.keySet()) {
 			if (predicate.test(cell)) {

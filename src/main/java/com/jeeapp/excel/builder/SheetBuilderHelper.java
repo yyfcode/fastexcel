@@ -205,10 +205,10 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	}
 
 	/**
-	 * 设置列宽
+	 * 自动换行
 	 */
-	public B setColumnWidth(int column, int width) {
-		sheet.setColumnWidth(column, width * 256);
+	public B setAutoBreaks(Boolean autoBreaks) {
+		sheet.setAutobreaks(autoBreaks);
 		return self();
 	}
 
