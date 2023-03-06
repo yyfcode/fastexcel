@@ -189,8 +189,8 @@ public class TableBuilder<T> extends SheetBuilderHelper<SheetBuilder> {
 	 */
 	public TableBuilder<T> createHeader(String... names) {
 		if (ArrayUtils.isNotEmpty(names)) {
-			// 只保留指定属性，包含子属性
-			properties.removeIf(property -> !matchesProperty(Arrays.asList(names), property));
+			properties.removeIf(property -> !IterableUtils.matchesAny(Arrays.asList(names),
+				it -> it.equals(property) || property.startsWith(it + ".")));
 		}
 		thisRow = parent.sheet.getLastRowNum() + 1;
 		lastRow = thisRow;
@@ -223,13 +223,6 @@ public class TableBuilder<T> extends SheetBuilderHelper<SheetBuilder> {
 	}
 
 	/**
-	 * 判断属性是否需要过滤
-	 */
-	private Boolean matchesProperty(List<String> properties, String property) {
-		return IterableUtils.matchesAny(properties, it -> it.startsWith(property + ".") || property.equals(it));
-	}
-
-	/**
 	 * 创建表头
 	 */
 	private List<Column> resolveHeaders(Column column, Class<?> type) {
@@ -237,7 +230,7 @@ public class TableBuilder<T> extends SheetBuilderHelper<SheetBuilder> {
 		for (Field field : getFields(type)) {
 			Class<?> fieldType = field.getType();
 			String property = column == null ? field.getName() : column.getName() + "." + field.getName();
-			if (!matchesProperty(properties, property)) {
+			if (!IterableUtils.matchesAny(properties, it -> it.equals(property) || it.startsWith(property + "."))) {
 				continue;
 			}
 			Column header = new Column(field);
@@ -260,8 +253,6 @@ public class TableBuilder<T> extends SheetBuilderHelper<SheetBuilder> {
 			}
 			if (CollectionUtils.isEmpty(header.getChildren())) {
 				thisCol++;
-			} else {
-				properties.remove(property);
 			}
 			header.setLastCol(thisCol);
 			headers.add(header);
@@ -323,38 +314,39 @@ public class TableBuilder<T> extends SheetBuilderHelper<SheetBuilder> {
 			String propertyName = parentPropertyPath + field.getName();
 			String property = RegExUtils.removeAll(propertyName, "\\[(.*?)]");
 			int column = properties.indexOf(property);
-			if (IterableUtils.matchesAny(properties, str -> str.startsWith(property + ".") || str.equals(property))) {
-				Object propertyValue = beanWrapper.getPropertyValue(field.getName());
-				if (propertyType.isArray() && propertyValue != null) {
-					Object[] values = ObjectUtils.toObjectArray(propertyValue);
-					int length = values.length;
-					calculateNestedPropertyPathRowCount(parentPropertyPath, length, nestedPropertyPathRowCount);
-					for (int i = 0; i < length; i++) {
-						String propertyPath = propertyName + "[" + i + "].";
-						nestedPropertyPaths.add(StringUtils.substringBeforeLast(propertyPath, "."));
-						cells.addAll(resolveCells(values[i], propertyPath, nestedPropertyPaths, nestedPropertyPathRowCount));
-					}
-				} else if (Collection.class.isAssignableFrom(propertyType) && propertyValue != null) {
-					Collection<?> values = (Collection<?>) propertyValue;
-					int size = values.size();
-					calculateNestedPropertyPathRowCount(parentPropertyPath, size, nestedPropertyPathRowCount);
-					for (int i = 0; i < size; i++) {
-						String propertyPath = propertyName + "[" + i + "].";
-						nestedPropertyPaths.add(StringUtils.substringBeforeLast(propertyPath, "."));
-						cells.addAll(resolveCells(values.toArray()[i], propertyPath, nestedPropertyPaths, nestedPropertyPathRowCount));
-					}
-				} else if (!BeanUtils.isSimpleProperty(propertyType) && propertyValue != null) {
-					String propertyPath = propertyName + ".";
+			if (!IterableUtils.matchesAny(properties, it -> it.equals(property) || it.startsWith(property + "."))) {
+				continue;
+			}
+			Object propertyValue = beanWrapper.getPropertyValue(field.getName());
+			if (propertyType.isArray() && propertyValue != null) {
+				Object[] values = ObjectUtils.toObjectArray(propertyValue);
+				int length = values.length;
+				calculateNestedPropertyPathRowCount(parentPropertyPath, length, nestedPropertyPathRowCount);
+				for (int i = 0; i < length; i++) {
+					String propertyPath = propertyName + "[" + i + "].";
 					nestedPropertyPaths.add(StringUtils.substringBeforeLast(propertyPath, "."));
-					cells.addAll(resolveCells(propertyValue, propertyPath, nestedPropertyPaths, nestedPropertyPathRowCount));
-				} else if (column > -1) {
-					Cell cell = new Cell(field);
-					cell.setName(propertyName);
-					cell.setValue(propertyValue);
-					cell.setFirstCol(column);
-					cell.setLastCol(column);
-					cells.add(cell);
+					cells.addAll(resolveCells(values[i], propertyPath, nestedPropertyPaths, nestedPropertyPathRowCount));
 				}
+			} else if (Collection.class.isAssignableFrom(propertyType) && propertyValue != null) {
+				Collection<?> values = (Collection<?>) propertyValue;
+				int size = values.size();
+				calculateNestedPropertyPathRowCount(parentPropertyPath, size, nestedPropertyPathRowCount);
+				for (int i = 0; i < size; i++) {
+					String propertyPath = propertyName + "[" + i + "].";
+					nestedPropertyPaths.add(StringUtils.substringBeforeLast(propertyPath, "."));
+					cells.addAll(resolveCells(values.toArray()[i], propertyPath, nestedPropertyPaths, nestedPropertyPathRowCount));
+				}
+			} else if (!BeanUtils.isSimpleProperty(propertyType) && propertyValue != null) {
+				String propertyPath = propertyName + ".";
+				nestedPropertyPaths.add(StringUtils.substringBeforeLast(propertyPath, "."));
+				cells.addAll(resolveCells(propertyValue, propertyPath, nestedPropertyPaths, nestedPropertyPathRowCount));
+			} else if (column > -1) {
+				Cell cell = new Cell(field);
+				cell.setName(propertyName);
+				cell.setValue(propertyValue);
+				cell.setFirstCol(column);
+				cell.setLastCol(column);
+				cells.add(cell);
 			}
 		}
 		return cells;
@@ -399,8 +391,9 @@ public class TableBuilder<T> extends SheetBuilderHelper<SheetBuilder> {
 				} else {
 					properties.addAll(getProperties(property, fieldType));
 				}
+			} else {
+				properties.add(property);
 			}
-			properties.add(property);
 		}
 		return properties;
 	}
