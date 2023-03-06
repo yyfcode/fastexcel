@@ -54,10 +54,9 @@ public class ColumnBuilder<B extends ColumnBuilder<B, P>, P extends SheetBuilder
 	}
 
 	/**
-	 * 添加样式
+	 * 设置样式
 	 */
-	@Override
-	public P addCellStyle() {
+	public P setCellStyle() {
 		P parent = super.addCellStyle();
 		int lastRowNum = parent.sheet.getLastRowNum();
 		if (lastRowNum > -1) {

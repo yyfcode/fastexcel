@@ -9,7 +9,7 @@ import org.apache.poi.ss.util.SheetUtil;
 /**
  * @author justice
  */
-public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends DataValidationBuilder<CellRangeBuilder<P>, P> {
+public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends CreationBuilder<CellRangeBuilder<P>, P> {
 
 	private final P parent;
 
@@ -58,10 +58,9 @@ public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends DataValid
 	}
 
 	/**
-	 * 添加样式
+	 * 设置样式
 	 */
-	@Override
-	public P addCellStyle() {
+	public P setCellStyle() {
 		P parent = super.addCellStyle();
 		for (CellAddress cellAddress : new CellRangeAddress(firstRow, lastRow, firstCol, lastCol)) {
 			Cell cell = SheetUtil.getCellWithMerges(parent.sheet, cellAddress.getRow(), cellAddress.getColumn());

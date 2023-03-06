@@ -12,7 +12,7 @@ import org.apache.poi.ss.util.SheetUtil;
  * @author Justice
  * @since 0.0.2
  */
-public class CellBuilder<P extends SheetBuilderHelper<P>> extends DataValidationBuilder<CellBuilder<P>, P> {
+public class CellBuilder<P extends SheetBuilderHelper<P>> extends CreationBuilder<CellBuilder<P>, P> {
 
 	private final P parent;
 
@@ -80,10 +80,9 @@ public class CellBuilder<P extends SheetBuilderHelper<P>> extends DataValidation
 	}
 
 	/**
-	 * 添加样式
+	 * 设置样式
 	 */
-	@Override
-	public P addCellStyle() {
+	public P setCellStyle() {
 		P parent = super.addCellStyle();
 		Cell cell = SheetUtil.getCellWithMerges(parent.sheet, cellAddress.getRow(), cellAddress.getColumn());
 		if (cell != null) {

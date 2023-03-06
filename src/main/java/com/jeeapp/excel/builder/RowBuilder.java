@@ -41,20 +41,16 @@ public class RowBuilder<B extends RowBuilder<B, P>, P extends SheetBuilderHelper
 	}
 
 	/**
-	 * 添加样式
+	 * 设置样式
 	 */
-	@Override
-	public P addCellStyle() {
+	public P setCellStyle() {
 		P parent = super.addCellStyle();
 		Row row = parent.sheet.getRow(rowNum);
-		if (row != null) {
-			short lastCellNum = row.getLastCellNum();
-			if (lastCellNum > -1) {
-				for (CellAddress cellAddress : new CellRangeAddress(rowNum, rowNum, 0, lastCellNum)) {
-					Cell cell = SheetUtil.getCellWithMerges(parent.sheet, cellAddress.getRow(), cellAddress.getColumn());
-					if (cell != null) {
-						parent.setCellStyle(cell);
-					}
+		if (row != null && row.getLastCellNum() > -1) {
+			for (CellAddress cellAddress : new CellRangeAddress(rowNum, rowNum, 0, row.getLastCellNum())) {
+				Cell cell = SheetUtil.getCellWithMerges(parent.sheet, cellAddress.getRow(), cellAddress.getColumn());
+				if (cell != null) {
+					parent.setCellStyle(cell);
 				}
 			}
 		}
