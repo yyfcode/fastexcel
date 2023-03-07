@@ -126,18 +126,18 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	}
 
 	/**
-	 * 匹配最后一行
-	 */
-	public RowBuilder<?, B> matchingLastRow() {
-		return new RowBuilder<>(self(), sheet.getLastRowNum());
-	}
-
-	/**
 	 * 匹配行
 	 */
 	@Override
 	public RowBuilder<?, B> matchingRow(int row) {
 		return new RowBuilder<>(self(), row);
+	}
+
+	/**
+	 * 匹配最后一行
+	 */
+	public RowBuilder<?, B> matchingLastRow() {
+		return new RowBuilder<>(self(), sheet.getLastRowNum());
 	}
 
 	/**
@@ -160,6 +160,13 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	 */
 	public CellBuilder<B> matchingCell(int row, int column) {
 		return matchingCell(new CellAddress(row, column));
+	}
+
+	/**
+	 * 匹配活动单元格的位置
+	 */
+	public CellBuilder<B> matchingActiveCell() {
+		return matchingCell(sheet.getActiveCell());
 	}
 
 	/**

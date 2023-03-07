@@ -23,6 +23,7 @@ import org.apache.poi.ss.usermodel.FormulaError;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
@@ -448,6 +449,8 @@ public class CellUtils {
 			cell.setCellValue((Date) value);
 		} else if (value instanceof Calendar) {
 			cell.setCellValue((Calendar) value);
+		} else if (value instanceof RichTextString) {
+			cell.setCellValue((RichTextString) value);
 		} else if (isFormulaDefinition(value)) {
 			cell.setCellFormula(((String) value).substring(1));
 		} else {
