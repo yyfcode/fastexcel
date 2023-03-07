@@ -39,21 +39,27 @@ public class CellStyleBuilder<B extends CellStyleBuilder<B, P>, P extends CellBu
 		this.properties = new HashMap<>();
 	}
 
-	protected CellStyleBuilder(P parent, short column) {
-		this.parent = parent;
-		this.column = (int) column;
-		this.properties = new HashMap<>();
-	}
-
 	protected CellStyleBuilder(P parent, int row) {
 		this.parent = parent;
 		this.row = row;
 		this.properties = new HashMap<>();
 	}
 
+	protected CellStyleBuilder(P parent, short column) {
+		this.parent = parent;
+		this.column = (int) column;
+		this.properties = new HashMap<>();
+	}
+
 	protected CellStyleBuilder(P parent, Predicate<Cell> predicate) {
 		this.parent = parent;
 		this.predicate = predicate;
+		this.properties = new HashMap<>();
+	}
+
+	protected CellStyleBuilder(P parent, int row, int column) {
+		this.parent = parent;
+		this.cell = new CellAddress(row, column);
 		this.properties = new HashMap<>();
 	}
 

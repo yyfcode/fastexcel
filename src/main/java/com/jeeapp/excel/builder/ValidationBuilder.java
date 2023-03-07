@@ -82,6 +82,7 @@ public class ValidationBuilder<B extends CreationBuilder<B, P>, P extends SheetB
 		validation.setShowPromptBox(showPromptBox);
 		validation.createErrorBox(errorBoxTitle, errorBoxText);
 		validation.createPromptBox(promptBoxTitle, promptBoxText);
-		return parent.addValidationData(validation);
+		parent.sheet.addValidationData(validation);
+		return parent;
 	}
 }

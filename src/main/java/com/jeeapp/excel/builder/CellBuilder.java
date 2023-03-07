@@ -3,7 +3,6 @@ package com.jeeapp.excel.builder;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.ss.usermodel.Comment;
-import org.apache.poi.ss.usermodel.Drawing;
 import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.ss.util.CellAddress;
 import org.apache.poi.ss.util.SheetUtil;
@@ -33,13 +32,12 @@ public class CellBuilder<P extends SheetBuilderHelper<P>> extends CreationBuilde
 	}
 
 	public CellBuilder<P> createCellComment(String text, String author, int width, int height) {
-		ClientAnchor clientAnchor = parent.creationHelper.createClientAnchor();
-		RichTextString string = parent.creationHelper.createRichTextString(text);
+		ClientAnchor clientAnchor = creationHelper.createClientAnchor();
+		RichTextString string = creationHelper.createRichTextString(text);
 		clientAnchor.setRow1(cellAddress.getRow());
 		clientAnchor.setCol1(cellAddress.getColumn());
 		clientAnchor.setRow2(cellAddress.getRow() + width);
 		clientAnchor.setCol2(cellAddress.getColumn() + height);
-		Drawing<?> drawing = parent.sheet.getDrawingPatriarch();
 		Comment cellComment = drawing.createCellComment(clientAnchor);
 		cellComment.setString(string);
 		cellComment.setAuthor(author);
@@ -47,13 +45,13 @@ public class CellBuilder<P extends SheetBuilderHelper<P>> extends CreationBuilde
 	}
 
 	public CellBuilder<P> createPicture(byte[] pictureData, int format) {
-		ClientAnchor clientAnchor = parent.creationHelper.createClientAnchor();
+		ClientAnchor clientAnchor = creationHelper.createClientAnchor();
 		clientAnchor.setRow1(cellAddress.getRow());
 		clientAnchor.setCol1(cellAddress.getColumn());
 		clientAnchor.setRow2(cellAddress.getRow() + 1);
 		clientAnchor.setCol2(cellAddress.getColumn() + 1);
-		int pictureIndex = parent.workbook.addPicture(pictureData, format);
-		parent.sheet.getDrawingPatriarch().createPicture(clientAnchor, pictureIndex);
+		int pictureIndex = workbook.addPicture(pictureData, format);
+		drawing.createPicture(clientAnchor, pictureIndex);
 		return self();
 	}
 
@@ -61,7 +59,7 @@ public class CellBuilder<P extends SheetBuilderHelper<P>> extends CreationBuilde
 	 * 活动单元格
 	 */
 	public CellBuilder<P> setActiveCell() {
-		parent.sheet.setActiveCell(cellAddress);
+		sheet.setActiveCell(cellAddress);
 		return self();
 	}
 
@@ -84,7 +82,7 @@ public class CellBuilder<P extends SheetBuilderHelper<P>> extends CreationBuilde
 	 */
 	public P setCellStyle() {
 		P parent = super.addCellStyle();
-		Cell cell = SheetUtil.getCellWithMerges(parent.sheet, cellAddress.getRow(), cellAddress.getColumn());
+		Cell cell = SheetUtil.getCellWithMerges(sheet, cellAddress.getRow(), cellAddress.getColumn());
 		if (cell != null) {
 			parent.setCellStyle(cell);
 		}

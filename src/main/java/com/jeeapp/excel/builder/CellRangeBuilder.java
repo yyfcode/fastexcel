@@ -34,13 +34,13 @@ public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends CreationB
 	 * 创建图片
 	 */
 	public CellRangeBuilder<P> createPicture(byte[] pictureData, int format) {
-		ClientAnchor clientAnchor = parent.creationHelper.createClientAnchor();
+		ClientAnchor clientAnchor = creationHelper.createClientAnchor();
 		clientAnchor.setRow1(firstRow);
 		clientAnchor.setCol1(firstCol);
 		clientAnchor.setRow2(lastRow + 1);
 		clientAnchor.setCol2(lastCol + 1);
-		int pictureIndex = parent.workbook.addPicture(pictureData, format);
-		parent.sheet.getDrawingPatriarch().createPicture(clientAnchor, pictureIndex);
+		int pictureIndex = workbook.addPicture(pictureData, format);
+		drawing.createPicture(clientAnchor, pictureIndex);
 		return this;
 	}
 
@@ -63,7 +63,7 @@ public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends CreationB
 	public P setCellStyle() {
 		P parent = super.addCellStyle();
 		for (CellAddress cellAddress : new CellRangeAddress(firstRow, lastRow, firstCol, lastCol)) {
-			Cell cell = SheetUtil.getCellWithMerges(parent.sheet, cellAddress.getRow(), cellAddress.getColumn());
+			Cell cell = SheetUtil.getCellWithMerges(sheet, cellAddress.getRow(), cellAddress.getColumn());
 			if (cell != null) {
 				parent.setCellStyle(cell);
 			}
@@ -77,7 +77,7 @@ public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends CreationB
 	public P fillUndefinedCells() {
 		P parent = super.addCellStyle();
 		for (CellAddress cellAddress : new CellRangeAddress(firstRow, lastRow, firstCol, lastCol)) {
-			Cell cell = SheetUtil.getCellWithMerges(parent.sheet, cellAddress.getRow(), cellAddress.getColumn());
+			Cell cell = SheetUtil.getCellWithMerges(sheet, cellAddress.getRow(), cellAddress.getColumn());
 			if (cell == null) {
 				parent.createCell(cellAddress);
 			}
