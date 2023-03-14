@@ -11,27 +11,24 @@ import org.apache.poi.ss.util.SheetUtil;
  * @author Justice
  * @since 0.0.2
  */
-public class CellBuilder<P extends SheetBuilderHelper<P>> extends CreationBuilder<CellBuilder<P>, P> {
-
-	private final P parent;
+public class CellBuilder extends CreationBuilder<CellBuilder> {
 
 	private final CellAddress cellAddress;
 
-	protected CellBuilder(P parent, CellAddress cellAddress) {
+	protected CellBuilder(SheetBuilder parent, CellAddress cellAddress) {
 		super(parent, cellAddress.getRow(), cellAddress.getRow(), cellAddress.getColumn(), cellAddress.getColumn());
-		this.parent = parent;
 		this.cellAddress = cellAddress;
 	}
 
-	public CellBuilder<P> createCellComment(String text) {
+	public CellBuilder createCellComment(String text) {
 		return createCellComment(text, null, 2, 1);
 	}
 
-	public CellBuilder<P> createCellComment(String text, String author) {
+	public CellBuilder createCellComment(String text, String author) {
 		return createCellComment(text, author, 2, 1);
 	}
 
-	public CellBuilder<P> createCellComment(String text, String author, int width, int height) {
+	public CellBuilder createCellComment(String text, String author, int width, int height) {
 		ClientAnchor clientAnchor = creationHelper.createClientAnchor();
 		RichTextString string = creationHelper.createRichTextString(text);
 		clientAnchor.setRow1(cellAddress.getRow());
@@ -44,21 +41,10 @@ public class CellBuilder<P extends SheetBuilderHelper<P>> extends CreationBuilde
 		return this;
 	}
 
-	public CellBuilder<P> createPicture(byte[] pictureData, int format) {
-		ClientAnchor clientAnchor = creationHelper.createClientAnchor();
-		clientAnchor.setRow1(cellAddress.getRow());
-		clientAnchor.setCol1(cellAddress.getColumn());
-		clientAnchor.setRow2(cellAddress.getRow() + 1);
-		clientAnchor.setCol2(cellAddress.getColumn() + 1);
-		int pictureIndex = workbook.addPicture(pictureData, format);
-		drawing.createPicture(clientAnchor, pictureIndex);
-		return self();
-	}
-
 	/**
 	 * 活动单元格
 	 */
-	public CellBuilder<P> setActiveCell() {
+	public CellBuilder setActiveCell() {
 		sheet.setActiveCell(cellAddress);
 		return self();
 	}
@@ -66,22 +52,22 @@ public class CellBuilder<P extends SheetBuilderHelper<P>> extends CreationBuilde
 	/**
 	 * 设置单元格值
 	 */
-	public P setCellValue(Object value) {
+	public SheetBuilder setCellValue(Object value) {
 		return super.addCellStyle().createCell(cellAddress, value);
 	}
 
 	/**
 	 * 设置空单元
 	 */
-	public P setBlank() {
+	public SheetBuilder setBlank() {
 		return super.addCellStyle().createCell(cellAddress);
 	}
 
 	/**
 	 * 设置样式
 	 */
-	public P setCellStyle() {
-		P parent = super.addCellStyle();
+	public SheetBuilder setCellStyle() {
+		SheetBuilder parent = super.addCellStyle();
 		Cell cell = SheetUtil.getCellWithMerges(sheet, cellAddress.getRow(), cellAddress.getColumn());
 		if (cell != null) {
 			parent.setCellStyle(cell);

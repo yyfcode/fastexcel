@@ -9,13 +9,13 @@ import org.apache.poi.ss.util.SheetUtil;
  * @author Justice
  * @since 0.0.2
  */
-public class ColumnBuilder<B extends ColumnBuilder<B, P>, P extends SheetBuilderHelper<P>> extends CellStyleBuilder<B, P> {
+public class ColumnBuilder extends CellStyleBuilder<ColumnBuilder, SheetBuilder> {
 
-	private final P parent;
+	private final SheetBuilder parent;
 
 	private final int column;
 
-	protected ColumnBuilder(P parent, int column) {
+	protected ColumnBuilder(SheetBuilder parent, int column) {
 		super(parent, (short) column);
 		this.parent = parent;
 		this.column = column;
@@ -24,7 +24,7 @@ public class ColumnBuilder<B extends ColumnBuilder<B, P>, P extends SheetBuilder
 	/**
 	 * 设置列宽
 	 */
-	public B setColumnWidth(int width) {
+	public ColumnBuilder setColumnWidth(int width) {
 		parent.sheet.setColumnWidth(column, width * 256);
 		return self();
 	}
@@ -32,7 +32,7 @@ public class ColumnBuilder<B extends ColumnBuilder<B, P>, P extends SheetBuilder
 	/**
 	 * 设置换行
 	 */
-	public B setColumnBreak() {
+	public ColumnBuilder setColumnBreak() {
 		parent.sheet.setColumnBreak(column);
 		return self();
 	}
@@ -40,7 +40,7 @@ public class ColumnBuilder<B extends ColumnBuilder<B, P>, P extends SheetBuilder
 	/**
 	 * 设置折叠
 	 */
-	public B setColumnGroupCollapsed(boolean collapse) {
+	public ColumnBuilder setColumnGroupCollapsed(boolean collapse) {
 		parent.sheet.setColumnGroupCollapsed(column, collapse);
 		return self();
 	}
@@ -48,7 +48,7 @@ public class ColumnBuilder<B extends ColumnBuilder<B, P>, P extends SheetBuilder
 	/**
 	 * 设置隐藏
 	 */
-	public B setColumnHidden(boolean hidden) {
+	public ColumnBuilder setColumnHidden(boolean hidden) {
 		parent.sheet.setColumnHidden(column, hidden);
 		return self();
 	}
@@ -56,8 +56,8 @@ public class ColumnBuilder<B extends ColumnBuilder<B, P>, P extends SheetBuilder
 	/**
 	 * 设置样式
 	 */
-	public P setCellStyle() {
-		P parent = super.addCellStyle();
+	public SheetBuilder setCellStyle() {
+		SheetBuilder parent = super.addCellStyle();
 		int lastRowNum = parent.sheet.getLastRowNum();
 		if (lastRowNum > -1) {
 			for (CellAddress cellAddress : new CellRangeAddress(0, lastRowNum, column, column)) {

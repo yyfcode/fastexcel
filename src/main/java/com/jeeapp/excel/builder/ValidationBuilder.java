@@ -6,9 +6,9 @@ import org.apache.poi.ss.usermodel.DataValidation.ErrorStyle;
 /**
  * @author Justice
  */
-public class ValidationBuilder<B extends CreationBuilder<B, P>, P extends SheetBuilderHelper<P>> {
+public class ValidationBuilder<B extends CreationBuilder<B>> {
 
-	private final CreationBuilder<B, P> parent;
+	private final B parent;
 
 	private final DataValidation validation;
 
@@ -30,44 +30,44 @@ public class ValidationBuilder<B extends CreationBuilder<B, P>, P extends SheetB
 
 	private String promptBoxText;
 
-	protected ValidationBuilder(CreationBuilder<B, P> parent, DataValidation validation) {
+	protected ValidationBuilder(B parent, DataValidation validation) {
 		this.parent = parent;
 		this.validation = validation;
 	}
 
-	public ValidationBuilder<B, P> allowedEmptyCell(boolean allowedEmptyCell) {
+	public ValidationBuilder<B> allowedEmptyCell(boolean allowedEmptyCell) {
 		this.allowedEmptyCell = allowedEmptyCell;
 		return this;
 	}
 
-	public ValidationBuilder<B, P> setErrorStyle(int errorStyle) {
+	public ValidationBuilder<B> setErrorStyle(int errorStyle) {
 		this.errorStyle = errorStyle;
 		return this;
 	}
 
-	public ValidationBuilder<B, P> setSuppressDropDownArrow(boolean suppress) {
+	public ValidationBuilder<B> setSuppressDropDownArrow(boolean suppress) {
 		this.suppress = suppress;
 		return this;
 	}
 
-	public ValidationBuilder<B, P> showErrorBox(String errorBoxTitle, String errorBoxText) {
+	public ValidationBuilder<B> showErrorBox(String errorBoxTitle, String errorBoxText) {
 		showErrorBox(true, errorBoxTitle, errorBoxText);
 		return this;
 	}
 
-	public ValidationBuilder<B, P> showPromptBox(String promptBoxTitle, String promptBoxText) {
+	public ValidationBuilder<B> showPromptBox(String promptBoxTitle, String promptBoxText) {
 		showPromptBox(true, promptBoxTitle, promptBoxText);
 		return this;
 	}
 
-	protected ValidationBuilder<B, P> showErrorBox(boolean showErrorBox, String errorBoxTitle, String errorBoxText) {
+	protected ValidationBuilder<B> showErrorBox(boolean showErrorBox, String errorBoxTitle, String errorBoxText) {
 		this.showErrorBox = showErrorBox;
 		this.errorBoxTitle = errorBoxTitle;
 		this.errorBoxText = errorBoxText;
 		return this;
 	}
 
-	protected ValidationBuilder<B, P> showPromptBox(boolean showPromptBox, String promptBoxTitle, String promptBoxText) {
+	protected ValidationBuilder<B> showPromptBox(boolean showPromptBox, String promptBoxTitle, String promptBoxText) {
 		this.showPromptBox = showPromptBox;
 		this.promptBoxTitle = promptBoxTitle;
 		this.promptBoxText = promptBoxText;

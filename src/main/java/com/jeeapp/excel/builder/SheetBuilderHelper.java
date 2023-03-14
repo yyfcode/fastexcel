@@ -15,7 +15,7 @@ import com.jeeapp.excel.util.CellUtils;
  * @since 0.0.2
  */
 @Slf4j
-abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellBuilderHelper<B> {
+abstract class SheetBuilderHelper extends CellBuilderHelper<SheetBuilder> {
 
 	protected final Sheet sheet;
 
@@ -42,7 +42,7 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	/**
 	 * 创建空行
 	 */
-	public B createRow() {
+	public SheetBuilder createRow() {
 		initRow(sheet.createRow(sheet.getLastRowNum() + 1));
 		return self();
 	}
@@ -50,7 +50,7 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	/**
 	 * 创建单行
 	 */
-	public B createRow(Object... cells) {
+	public SheetBuilder createRow(Object... cells) {
 		createRow();
 		for (Object value : cells) {
 			createCell(value);
@@ -61,7 +61,7 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	/**
 	 * 创建多行
 	 */
-	public B createRows(Object[][] rows) {
+	public SheetBuilder createRows(Object[][] rows) {
 		for (Object[] cells : rows) {
 			createRow(cells);
 		}
@@ -71,7 +71,7 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	/**
 	 * 创建有值的单元格(支持公式)
 	 */
-	public B createCell(Object value) {
+	public SheetBuilder createCell(Object value) {
 		int lastRowNum = sheet.getLastRowNum() == -1 ? 0 : sheet.getLastRowNum();
 		Row row = sheet.getRow(lastRowNum);
 		if (row == null) {
@@ -90,7 +90,7 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	/**
 	 * 指定位置创建有值单元格
 	 */
-	public B createCell(CellAddress cellAddress, Object value) {
+	public SheetBuilder createCell(CellAddress cellAddress, Object value) {
 		Row row = sheet.getRow(cellAddress.getRow());
 		if (row == null) {
 			row = initRow(sheet.createRow(cellAddress.getRow()));
@@ -107,21 +107,21 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	/**
 	 * 指定位置创建空单元格
 	 */
-	public B createCell(CellAddress cellAddress) {
+	public SheetBuilder createCell(CellAddress cellAddress) {
 		return createCell(cellAddress, null);
 	}
 
 	/**
 	 * 指定位置创建有值单元格
 	 */
-	public B createCell(int row, int column, Object value) {
+	public SheetBuilder createCell(int row, int column, Object value) {
 		return createCell(new CellAddress(row, column), value);
 	}
 
 	/**
 	 * 指定位置创建空单元格
 	 */
-	public B createCell(int row, int column) {
+	public SheetBuilder createCell(int row, int column) {
 		return createCell(row, column, null);
 	}
 
@@ -129,50 +129,50 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	 * 匹配行
 	 */
 	@Override
-	public RowBuilder<?, B> matchingRow(int row) {
-		return new RowBuilder<>(self(), row);
+	public RowBuilder matchingRow(int row) {
+		return new RowBuilder(self(), row);
 	}
 
 	/**
 	 * 匹配最后一行
 	 */
-	public RowBuilder<?, B> matchingLastRow() {
-		return new RowBuilder<>(self(), sheet.getLastRowNum());
+	public RowBuilder matchingLastRow() {
+		return new RowBuilder(self(), sheet.getLastRowNum());
 	}
 
 	/**
 	 * 匹配列
 	 */
 	@Override
-	public ColumnBuilder<?, B> matchingColumn(int column) {
-		return new ColumnBuilder<>(self(), column);
+	public ColumnBuilder matchingColumn(int column) {
+		return new ColumnBuilder(self(), column);
 	}
 
 	/**
 	 * 匹配单元格
 	 */
-	public CellBuilder<B> matchingCell(CellAddress cellAddress) {
-		return new CellBuilder<>(self(), cellAddress);
+	public CellBuilder matchingCell(CellAddress cellAddress) {
+		return new CellBuilder(self(), cellAddress);
 	}
 
 	/**
 	 * 匹配单元格
 	 */
-	public CellBuilder<B> matchingCell(int row, int column) {
+	public CellBuilder matchingCell(int row, int column) {
 		return matchingCell(new CellAddress(row, column));
 	}
 
 	/**
 	 * 匹配活动单元格的位置
 	 */
-	public CellBuilder<B> matchingActiveCell() {
+	public CellBuilder matchingActiveCell() {
 		return matchingCell(sheet.getActiveCell());
 	}
 
 	/**
 	 * 匹配最后一个单元格
 	 */
-	public CellBuilder<B> matchingLastCell() {
+	public CellBuilder matchingLastCell() {
 		int lastRowNum = sheet.getLastRowNum() == -1 ? 0 : sheet.getLastRowNum();
 		Row row = sheet.getRow(lastRowNum);
 		if (row == null) {
@@ -189,7 +189,7 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	/**
 	 * 匹配最后一行上的单元格
 	 */
-	public CellBuilder<B> matchingLastRowCell(int column) {
+	public CellBuilder matchingLastRowCell(int column) {
 		return matchingCell(new CellAddress(sheet.getLastRowNum(), column));
 	}
 
@@ -197,7 +197,7 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	 * 设置默认列宽
 	 */
 	@Override
-	public B setDefaultColumnWidth(int width) {
+	public SheetBuilder setDefaultColumnWidth(int width) {
 		sheet.setDefaultColumnWidth(width);
 		return self();
 	}
@@ -206,7 +206,7 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	 * 设置默认行高
 	 */
 	@Override
-	public B setDefaultRowHeight(int height) {
+	public SheetBuilder setDefaultRowHeight(int height) {
 		sheet.setDefaultRowHeightInPoints(height);
 		return self();
 	}
@@ -214,7 +214,7 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	/**
 	 * 自动换行
 	 */
-	public B setAutoBreaks(Boolean autoBreaks) {
+	public SheetBuilder setAutoBreaks(Boolean autoBreaks) {
 		sheet.setAutobreaks(autoBreaks);
 		return self();
 	}
@@ -227,8 +227,8 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	 * @param lastCol 结束列必须等于或大于 {@code firstCol}
 	 */
 	@Override
-	public CellRangeBuilder<B> matchingRegion(int firstRow, int lastRow, int firstCol, int lastCol) {
-		return new CellRangeBuilder<>(self(), firstRow, lastRow, firstCol, lastCol);
+	public CellRangeBuilder matchingRegion(int firstRow, int lastRow, int firstCol, int lastCol) {
+		return new CellRangeBuilder(self(), firstRow, lastRow, firstCol, lastCol);
 
 	}
 
@@ -237,7 +237,7 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	 * @deprecated use {@link SheetBuilderHelper#matchingCell(CellAddress)} instead.
 	 */
 	@Deprecated
-	public B createCellComment(String comment, String author, int row1, int col1, int row2, int col2) {
+	public SheetBuilder createCellComment(String comment, String author, int row1, int col1, int row2, int col2) {
 		return matchingCell(new CellAddress(row1, col1))
 			.createCellComment(comment, author, row2, col2)
 			.addCellStyle();
@@ -248,7 +248,7 @@ abstract class SheetBuilderHelper<B extends SheetBuilderHelper<B>> extends CellB
 	 * @deprecated use {@link SheetBuilderHelper#matchingLastCell()} instead.
 	 */
 	@Deprecated
-	public B createCellComment(String comment, String author, int row2, int col2) {
+	public SheetBuilder createCellComment(String comment, String author, int row2, int col2) {
 		return matchingLastCell()
 			.createCellComment(comment, author, row2, col2)
 			.addCellStyle();

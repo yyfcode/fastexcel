@@ -9,13 +9,13 @@ import org.apache.poi.ss.util.SheetUtil;
 /**
  * @author Justice
  */
-public class RowBuilder<B extends RowBuilder<B, P>, P extends SheetBuilderHelper<P>> extends CellStyleBuilder<B, P> {
+public class RowBuilder extends CellStyleBuilder<RowBuilder, SheetBuilder> {
 
-	private final P parent;
+	private final SheetBuilder parent;
 
 	private final int rowNum;
 
-	protected RowBuilder(P parent, int rowNum) {
+	protected RowBuilder(SheetBuilder parent, int rowNum) {
 		super(parent, rowNum);
 		this.parent = parent;
 		this.rowNum = rowNum;
@@ -24,7 +24,7 @@ public class RowBuilder<B extends RowBuilder<B, P>, P extends SheetBuilderHelper
 	/**
 	 * 设置行高
 	 */
-	public B setRowHeight(int height) {
+	public RowBuilder setRowHeight(int height) {
 		Row row = parent.sheet.getRow(rowNum);
 		if (row != null) {
 			row.setHeightInPoints(height);
@@ -35,7 +35,7 @@ public class RowBuilder<B extends RowBuilder<B, P>, P extends SheetBuilderHelper
 	/**
 	 * 设置换行
 	 */
-	public B setRowBreak() {
+	public RowBuilder setRowBreak() {
 		parent.sheet.setRowBreak(rowNum);
 		return self();
 	}
@@ -43,8 +43,8 @@ public class RowBuilder<B extends RowBuilder<B, P>, P extends SheetBuilderHelper
 	/**
 	 * 设置样式
 	 */
-	public P setCellStyle() {
-		P parent = super.addCellStyle();
+	public SheetBuilder setCellStyle() {
+		SheetBuilder parent = super.addCellStyle();
 		Row row = parent.sheet.getRow(rowNum);
 		if (row != null && row.getLastCellNum() > -1) {
 			for (CellAddress cellAddress : new CellRangeAddress(rowNum, rowNum, 0, row.getLastCellNum())) {

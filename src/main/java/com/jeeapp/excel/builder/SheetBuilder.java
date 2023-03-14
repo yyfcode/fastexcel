@@ -9,7 +9,7 @@ import org.springframework.util.Assert;
  * @author justice
  */
 @Slf4j
-public class SheetBuilder extends SheetBuilderHelper<SheetBuilder> {
+public class SheetBuilder extends SheetBuilderHelper {
 
 	private final WorkbookBuilder parent;
 

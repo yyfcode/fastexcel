@@ -39,7 +39,7 @@ import com.jeeapp.excel.model.Column;
  * @author justice
  */
 @Slf4j
-public class TableBuilder<T> extends SheetBuilderHelper<SheetBuilder> {
+public class TableBuilder<T> extends SheetBuilderHelper {
 
 	public static final Map<Class<?>, List<Field>> FIELDS_CACHE = new ConcurrentHashMap<>();
 

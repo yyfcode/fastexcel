@@ -1,7 +1,6 @@
 package com.jeeapp.excel.builder;
 
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.ss.util.CellAddress;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.SheetUtil;
@@ -9,9 +8,9 @@ import org.apache.poi.ss.util.SheetUtil;
 /**
  * @author justice
  */
-public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends CreationBuilder<CellRangeBuilder<P>, P> {
+public class CellRangeBuilder extends CreationBuilder<CellRangeBuilder> {
 
-	private final P parent;
+	private final SheetBuilder parent;
 
 	private final int firstRow;
 
@@ -21,7 +20,7 @@ public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends CreationB
 
 	private final int lastCol;
 
-	protected CellRangeBuilder(P parent, int firstRow, int lastRow, int firstCol, int lastCol) {
+	protected CellRangeBuilder(SheetBuilder parent, int firstRow, int lastRow, int firstCol, int lastCol) {
 		super(parent, firstRow, lastRow, firstCol, lastCol);
 		this.firstRow = firstRow;
 		this.lastRow = lastRow;
@@ -31,24 +30,10 @@ public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends CreationB
 	}
 
 	/**
-	 * 创建图片
-	 */
-	public CellRangeBuilder<P> createPicture(byte[] pictureData, int format) {
-		ClientAnchor clientAnchor = creationHelper.createClientAnchor();
-		clientAnchor.setRow1(firstRow);
-		clientAnchor.setCol1(firstCol);
-		clientAnchor.setRow2(lastRow + 1);
-		clientAnchor.setCol2(lastCol + 1);
-		int pictureIndex = workbook.addPicture(pictureData, format);
-		drawing.createPicture(clientAnchor, pictureIndex);
-		return this;
-	}
-
-	/**
 	 * 添加合并区域
 	 */
-	public P addMergedRegion() {
-		P parent = super.addCellStyle();
+	public SheetBuilder addMergedRegion() {
+		SheetBuilder parent = super.addCellStyle();
 		parent.addMergedRegion(firstRow, lastRow, firstCol, lastCol);
 		Cell cell = SheetUtil.getCellWithMerges(parent.sheet, firstRow, firstCol);
 		if (cell != null) {
@@ -60,8 +45,8 @@ public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends CreationB
 	/**
 	 * 设置样式
 	 */
-	public P setCellStyle() {
-		P parent = super.addCellStyle();
+	public SheetBuilder setCellStyle() {
+		SheetBuilder parent = super.addCellStyle();
 		for (CellAddress cellAddress : new CellRangeAddress(firstRow, lastRow, firstCol, lastCol)) {
 			Cell cell = SheetUtil.getCellWithMerges(sheet, cellAddress.getRow(), cellAddress.getColumn());
 			if (cell != null) {
@@ -74,8 +59,8 @@ public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends CreationB
 	/**
 	 * 填充未定义的单元格
 	 */
-	public P fillUndefinedCells() {
-		P parent = super.addCellStyle();
+	public SheetBuilder fillUndefinedCells() {
+		SheetBuilder parent = super.addCellStyle();
 		for (CellAddress cellAddress : new CellRangeAddress(firstRow, lastRow, firstCol, lastCol)) {
 			Cell cell = SheetUtil.getCellWithMerges(sheet, cellAddress.getRow(), cellAddress.getColumn());
 			if (cell == null) {
@@ -89,7 +74,7 @@ public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends CreationB
 	 * @deprecated use {@link CellBuilder#createCellComment(String, String, int, int)} instead.
 	 */
 	@Deprecated
-	public CellRangeBuilder<P> setCellComment(String comment, String author, int row2, int col2) {
+	public CellRangeBuilder setCellComment(String comment, String author, int row2, int col2) {
 		parent.createCellComment(comment, author, firstRow, firstCol, row2, col2);
 		return this;
 	}
@@ -98,7 +83,7 @@ public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends CreationB
 	 * @deprecated use {@link SheetBuilderHelper#matchingRegion(int, int, int, int)} instead.
 	 */
 	@Deprecated
-	public CellRangeBuilder<P> addCellRange(int firstRow, int lastRow, int firstCol, int lastCol) {
+	public CellRangeBuilder addCellRange(int firstRow, int lastRow, int firstCol, int lastCol) {
 		return parent.matchingRegion(firstRow, lastRow, firstCol, lastCol);
 	}
 
@@ -106,7 +91,7 @@ public class CellRangeBuilder<P extends SheetBuilderHelper<P>> extends CreationB
 	 * @deprecated use {@link CellRangeBuilder#addMergedRegion()} instead.
 	 */
 	@Deprecated
-	public P merge() {
+	public SheetBuilder merge() {
 		addMergedRegion();
 		return parent;
 	}
