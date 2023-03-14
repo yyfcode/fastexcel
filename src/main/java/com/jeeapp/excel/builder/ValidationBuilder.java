@@ -74,7 +74,7 @@ public class ValidationBuilder<B extends CreationBuilder<B, P>, P extends SheetB
 		return this;
 	}
 
-	public CreationBuilder<B, P> addValidationData() {
+	public B addValidationData() {
 		validation.setEmptyCellAllowed(allowedEmptyCell);
 		validation.setSuppressDropDownArrow(suppress);
 		validation.setErrorStyle(errorStyle);
@@ -83,6 +83,6 @@ public class ValidationBuilder<B extends CreationBuilder<B, P>, P extends SheetB
 		validation.createErrorBox(errorBoxTitle, errorBoxText);
 		validation.createPromptBox(promptBoxTitle, promptBoxText);
 		parent.sheet.addValidationData(validation);
-		return parent;
+		return parent.self();
 	}
 }
