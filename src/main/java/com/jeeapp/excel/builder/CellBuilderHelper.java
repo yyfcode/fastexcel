@@ -104,7 +104,7 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 	/**
 	 * 设置表样式
 	 */
-	protected B setSheetStyle(Sheet sheet) {
+	protected void setSheetStyle(Sheet sheet) {
 		for (int column : properties.columnStyles.keySet()) {
 			setColumnStyle(sheet, column);
 		}
@@ -119,7 +119,6 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 			sheet.addMergedRegion(region);
 			setRegionStyle(sheet, region);
 		}
-		return self();
 	}
 
 	/**

@@ -24,7 +24,8 @@ public class SheetBuilder extends SheetBuilderHelper {
 	}
 
 	public WorkbookBuilder end() {
-		return parent.setSheetStyle(sheet);
+		this.setSheetStyle(sheet);
+		return parent;
 	}
 
 	public SheetBuilder createSheet() {
