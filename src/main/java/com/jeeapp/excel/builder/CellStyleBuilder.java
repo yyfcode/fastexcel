@@ -57,12 +57,6 @@ public class CellStyleBuilder<B extends CellStyleBuilder<B, P>, P extends CellBu
 		this.properties = new HashMap<>();
 	}
 
-	protected CellStyleBuilder(P parent, int row, int column) {
-		this.parent = parent;
-		this.cell = new CellAddress(row, column);
-		this.properties = new HashMap<>();
-	}
-
 	protected CellStyleBuilder(P parent, int firstRow, int lastRow, int firstCol, int lastCol) {
 		this.parent = parent;
 		if (firstRow == lastRow && firstCol == lastCol) {
@@ -392,6 +386,9 @@ public class CellStyleBuilder<B extends CellStyleBuilder<B, P>, P extends CellBu
 		return (B) this;
 	}
 
+	/**
+	 * 添加样式
+	 */
 	public P addCellStyle() {
 		if (properties.isEmpty()) {
 			return parent;

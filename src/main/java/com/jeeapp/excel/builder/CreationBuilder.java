@@ -1,14 +1,9 @@
 package com.jeeapp.excel.builder;
 
 import org.apache.poi.ss.usermodel.ClientAnchor;
-import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.DataValidation;
 import org.apache.poi.ss.usermodel.DataValidationConstraint;
 import org.apache.poi.ss.usermodel.DataValidationConstraint.ValidationType;
-import org.apache.poi.ss.usermodel.DataValidationHelper;
-import org.apache.poi.ss.usermodel.Drawing;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellRangeAddressList;
 
@@ -16,7 +11,7 @@ import org.apache.poi.ss.util.CellRangeAddressList;
  * @author Justice
  * @since 0.0.2
  */
-public abstract class CreationBuilder<B extends CreationBuilder<B>> extends CellStyleBuilder<B, SheetBuilder> {
+public abstract class CreationBuilder<B extends CreationBuilder<B>> extends HelperBuilder<B> {
 
 	private final int firstRow;
 
@@ -26,27 +21,15 @@ public abstract class CreationBuilder<B extends CreationBuilder<B>> extends Cell
 
 	private final int lastCol;
 
-	protected final Workbook workbook;
-
-	protected final Sheet sheet;
-
-	protected final Drawing<?> drawing;
-
-	protected final CreationHelper creationHelper;
-
-	protected final DataValidationHelper dataValidationHelper;
+	protected final SheetBuilder parent;
 
 	protected CreationBuilder(SheetBuilder parent, int firstRow, int lastRow, int firstCol, int lastCol) {
 		super(parent, firstRow, lastRow, firstCol, lastCol);
+		this.parent = parent;
 		this.firstRow = firstRow;
 		this.lastRow = lastRow;
 		this.firstCol = firstCol;
 		this.lastCol = lastCol;
-		this.workbook = parent.workbook;
-		this.sheet = parent.sheet;
-		this.drawing = parent.drawing;
-		this.creationHelper = parent.creationHelper;
-		this.dataValidationHelper = parent.dataValidationHelper;
 	}
 
 	protected ValidationBuilder<B> createConstraint(int validationType, int operatorType, String firstFormula,

@@ -9,7 +9,7 @@ import org.apache.poi.ss.util.SheetUtil;
 /**
  * @author Justice
  */
-public class RowBuilder extends CellStyleBuilder<RowBuilder, SheetBuilder> {
+public class RowBuilder extends HelperBuilder<RowBuilder> {
 
 	private final SheetBuilder parent;
 
@@ -25,7 +25,7 @@ public class RowBuilder extends CellStyleBuilder<RowBuilder, SheetBuilder> {
 	 * 设置行高
 	 */
 	public RowBuilder setRowHeight(int height) {
-		Row row = parent.sheet.getRow(rowNum);
+		Row row = sheet.getRow(rowNum);
 		if (row != null) {
 			row.setHeightInPoints(height);
 		}
@@ -36,7 +36,7 @@ public class RowBuilder extends CellStyleBuilder<RowBuilder, SheetBuilder> {
 	 * 设置换行
 	 */
 	public RowBuilder setRowBreak() {
-		parent.sheet.setRowBreak(rowNum);
+		sheet.setRowBreak(rowNum);
 		return self();
 	}
 
@@ -45,10 +45,10 @@ public class RowBuilder extends CellStyleBuilder<RowBuilder, SheetBuilder> {
 	 */
 	public SheetBuilder setCellStyle() {
 		SheetBuilder parent = super.addCellStyle();
-		Row row = parent.sheet.getRow(rowNum);
+		Row row = sheet.getRow(rowNum);
 		if (row != null && row.getLastCellNum() > -1) {
 			for (CellAddress cellAddress : new CellRangeAddress(rowNum, rowNum, 0, row.getLastCellNum())) {
-				Cell cell = SheetUtil.getCellWithMerges(parent.sheet, cellAddress.getRow(), cellAddress.getColumn());
+				Cell cell = SheetUtil.getCellWithMerges(sheet, cellAddress.getRow(), cellAddress.getColumn());
 				if (cell != null) {
 					parent.setCellStyle(cell);
 				}
