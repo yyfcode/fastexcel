@@ -273,7 +273,7 @@ public class TableBuilder<T> extends SheetBuilderHelper {
 		for (String propertyPath : nestedPropertyPaths) {
 			int rowSpans = nestedPropertyPathRowCount.get(propertyPath) == null ? 0 : nestedPropertyPathRowCount.get(propertyPath) - 1;
 			String[] indexes = StringUtils.substringsBetween(propertyPath, "[", "]");
-			int firstRow = Integer.parseInt(indexes[indexes.length - 1]);
+			int firstRow = indexes == null ? 0 : Integer.parseInt(indexes[indexes.length - 1]);
 			if (firstRow == 0) {
 				String parentPropertyPath = StringUtils.substringBeforeLast(propertyPath, ".");
 				if (propertyPathRowSpans.get(parentPropertyPath) != null) {
