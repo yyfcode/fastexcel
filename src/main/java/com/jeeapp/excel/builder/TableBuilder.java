@@ -271,7 +271,8 @@ public class TableBuilder<T> extends SheetBuilderHelper {
 		// 计算属性值行距
 		Map<String, RowSpan> propertyPathRowSpans = new HashMap<>();
 		for (String propertyPath : nestedPropertyPaths) {
-			int rowSpans = nestedPropertyPathRowCount.get(propertyPath) == null ? 0 : nestedPropertyPathRowCount.get(propertyPath) - 1;
+			Integer rowCount = nestedPropertyPathRowCount.get(propertyPath);
+			int rowSpans = rowCount == null || rowCount == 0 ? 0 : rowCount - 1;
 			String[] indexes = StringUtils.substringsBetween(propertyPath, "[", "]");
 			int firstRow = indexes == null ? 0 : Integer.parseInt(indexes[indexes.length - 1]);
 			if (firstRow == 0) {
