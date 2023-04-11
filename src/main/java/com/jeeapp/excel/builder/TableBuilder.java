@@ -57,11 +57,14 @@ public class TableBuilder<T> extends SheetBuilderHelper {
 
 	private int thisCol = -1;
 
+	private int lastCol;
+
 	protected TableBuilder(SheetBuilder parent, Class<T> type) {
 		super(parent, parent.sheet);
 		this.parent = parent;
 		this.type = type;
 		this.properties = getProperties(type);
+		this.lastCol = properties.size() - 1;
 	}
 
 	/**
@@ -141,7 +144,6 @@ public class TableBuilder<T> extends SheetBuilderHelper {
 		lastRow = thisRow;
 		List<Cell> cells = resolveCells(object);
 		int maxRow = 0;
-		int maxCol = 0;
 		for (Cell cell : cells) {
 			int firstRow = cell.getFirstRow();
 			int lastRow = cell.getLastRow();
@@ -155,10 +157,9 @@ public class TableBuilder<T> extends SheetBuilderHelper {
 					.addMergedRegion();
 			}
 			maxRow = Math.max(lastRow, maxRow);
-			maxCol = Math.max(lastCol, maxCol);
 		}
 		// 填充未定义的单元
-		parent.matchingRegion(thisRow, maxRow, 0, maxCol).fillUndefinedCells();
+		parent.matchingRegion(thisRow, maxRow, 0, lastCol).fillUndefinedCells();
 		return this;
 	}
 
@@ -194,6 +195,7 @@ public class TableBuilder<T> extends SheetBuilderHelper {
 		}
 		thisRow = parent.sheet.getLastRowNum() + 1;
 		lastRow = thisRow;
+		lastCol = properties.size() - 1;
 		List<Column> headers = resolveHeaders(null, type);
 		for (Column header : headers) {
 			createHeader(header);
