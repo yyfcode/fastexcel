@@ -93,7 +93,9 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 
 	/**
 	 * 添加合并区域
+	 * @deprecated removed in 0.1.0
 	 */
+	@Deprecated
 	public B addMergedRegion(int firstRow, int lastRow, int firstCol, int lastCol) {
 		this.properties.mergedRegions.addCellRangeAddress(new CellRangeAddress(firstRow, lastRow, firstCol, lastCol));
 		return self();
@@ -151,7 +153,7 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 	/**
 	 * 设置区域样式
 	 */
-	private void setRegionStyle(Sheet sheet, CellRangeAddress region) {
+	protected void setRegionStyle(Sheet sheet, CellRangeAddress region) {
 		Map<String, Object> properties = new HashMap<>(this.properties.commonStyles);
 		if (this.properties.regionStyles.containsKey(region)) {
 			properties.putAll(this.properties.regionStyles.get(region));
@@ -279,6 +281,7 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 
 		private Integer height;
 
+		@Deprecated
 		private CellRangeAddressList mergedRegions = new CellRangeAddressList();
 
 		private Map<String, Object> commonStyles = new LinkedHashMap<>();

@@ -234,7 +234,7 @@ abstract class SheetBuilderHelper extends CellBuilderHelper<SheetBuilder> {
 
 	/**
 	 * 指定单元格添加批注
-	 * @deprecated use {@link SheetBuilderHelper#matchingCell(CellAddress)} instead.
+	 * @deprecated removed in 0.1.0, use {@link SheetBuilderHelper#matchingCell(CellAddress)} instead.
 	 */
 	@Deprecated
 	public SheetBuilder createCellComment(String comment, String author, int row1, int col1, int row2, int col2) {
@@ -245,7 +245,7 @@ abstract class SheetBuilderHelper extends CellBuilderHelper<SheetBuilder> {
 
 	/**
 	 * 当前单元格添加批注
-	 * @deprecated use {@link SheetBuilderHelper#matchingLastCell()} instead.
+	 * @deprecated removed in 0.1.0, use {@link SheetBuilderHelper#matchingLastCell()} instead.
 	 */
 	@Deprecated
 	public SheetBuilder createCellComment(String comment, String author, int row2, int col2) {

@@ -22,6 +22,7 @@ import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.FormulaError;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.Hyperlink;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.ss.usermodel.Row;
@@ -451,6 +452,10 @@ public class CellUtils {
 			cell.setCellValue((Calendar) value);
 		} else if (value instanceof RichTextString) {
 			cell.setCellValue((RichTextString) value);
+		} else if (value instanceof Hyperlink) {
+			Hyperlink hyperlink = (Hyperlink) value;
+			cell.setHyperlink(hyperlink);
+			cell.setCellValue(hyperlink.getLabel());
 		} else if (isFormulaDefinition(value)) {
 			cell.setCellFormula(((String) value).substring(1));
 		} else {

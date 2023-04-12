@@ -18,9 +18,7 @@ public class Cell implements Serializable {
 
 	private static final long serialVersionUID = 8481559629638325751L;
 
-	/*-------------------------------------------
-    |                位置和值                    |
-    ============================================*/
+	protected final ExcelProperty property;
 
 	/** 单元格对应的字段属性 */
 	private String name;
@@ -40,15 +38,8 @@ public class Cell implements Serializable {
 	/** 单元格结束列 */
 	private int lastCol;
 
-	/*-------------------------------------------
-    |                格式化                      |
-    ============================================*/
-
+	/** 单元格格式 */
 	private String format = CellUtils.DEFAULT_FORMAT;
-
-	/*-------------------------------------------
-    |               数据验证                     |
-    ============================================*/
 
 	private int validationType;
 
@@ -79,7 +70,7 @@ public class Cell implements Serializable {
 	private String errorBoxText;
 
 	public Cell(Field field) {
-		ExcelProperty property = AnnotationUtils.getAnnotation(field, ExcelProperty.class);
+		this.property = AnnotationUtils.getAnnotation(field, ExcelProperty.class);
 		Assert.notNull(property, String.format("@ExcelProperty not found for %s", field));
 		// 数据格式
 		this.setFormat(property.format());

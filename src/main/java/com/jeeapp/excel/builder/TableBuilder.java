@@ -33,7 +33,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import com.jeeapp.excel.annotation.ExcelProperty;
 import com.jeeapp.excel.model.Cell;
-import com.jeeapp.excel.model.Column;
+import com.jeeapp.excel.model.Header;
 
 /**
  * @author justice
@@ -70,27 +70,26 @@ public class TableBuilder<T> extends SheetBuilderHelper {
 	/**
 	 * 创建表头
 	 */
-	private void createHeader(Column header) {
+	private void createHeader(Header header) {
 		int firstRow = header.getFirstRow();
 		int lastRow = header.getFirstRow();
 		int firstCol = header.getFirstCol();
 		int lastCol = header.getLastCol();
 		if (CollectionUtils.isNotEmpty(header.getChildren())) {
-			for (Column child : header.getChildren()) {
+			for (Header child : header.getChildren()) {
 				createHeader(child);
 			}
 		} else {
 			lastRow = this.lastRow;
 		}
 
-		// data format
-		int width = header.getWidth() == 8 ? parent.sheet.getDefaultColumnWidth() : header.getWidth();
+		// column style
 		parent.matchingColumn(firstCol)
-			.setColumnWidth(width)
+			.setColumnWidth(header.getWidth())
 			.setColumnHidden(header.getHidden())
 			.setDataFormat(header.getFormat())
 			.addCellStyle();
-		// data validation
+		// column validation
 		if (header.getValidationType() > ValidationType.ANY && header.getValidationType() <= ValidationType.FORMULA) {
 			parent.matchingRegion(this.lastRow + 1, parent.maxRows - this.lastRow - 1, lastCol, lastCol)
 				.createConstraint(header.getValidationType(),
@@ -105,7 +104,7 @@ public class TableBuilder<T> extends SheetBuilderHelper {
 				.showPromptBox(header.isShowPromptBox(), header.getPromptBoxTitle(), header.getPromptBoxText())
 				.addValidationData();
 		}
-		// cell comment
+		// header comment
 		if (StringUtils.isNotBlank(header.getComment())) {
 			parent.matchingCell(firstRow, firstCol)
 				.createCellComment(header.getComment(),
@@ -113,7 +112,7 @@ public class TableBuilder<T> extends SheetBuilderHelper {
 					header.getCommentWidth(),
 					header.getCommentHeight());
 		}
-		// cell style
+		// header style
 		if (firstRow == lastRow && firstCol == lastCol) {
 			parent.matchingCell(firstRow, firstCol)
 				.setFillForegroundColor(header.getFillForegroundColor())
@@ -125,8 +124,7 @@ public class TableBuilder<T> extends SheetBuilderHelper {
 				.setBorderColor(header.getBorderColor())
 				.setCellValue(header.getValue());
 		} else {
-			parent.createCell(firstRow, firstCol, header.getValue())
-				.matchingRegion(firstRow, lastRow, firstCol, lastCol)
+			parent.matchingRegion(firstRow, lastRow, firstCol, lastCol)
 				.setFillForegroundColor(header.getFillForegroundColor())
 				.setFillBackgroundColor(header.getFillBackgroundColor())
 				.setFillPattern(header.getFillPatternType())
@@ -134,7 +132,8 @@ public class TableBuilder<T> extends SheetBuilderHelper {
 				.setFontBold(true)
 				.setBorder(header.getBorder())
 				.setBorderColor(header.getBorderColor())
-				.addMergedRegion();
+				.mergeRegion()
+				.setCellValue(header.getValue());
 		}
 	}
 
@@ -152,9 +151,9 @@ public class TableBuilder<T> extends SheetBuilderHelper {
 			if (firstRow == lastRow && firstCol == lastCol) {
 				parent.createCell(firstRow, firstCol, cell.getValue());
 			} else {
-				parent.createCell(firstRow, firstCol, cell.getValue())
-					.matchingRegion(firstRow, lastRow, firstCol, lastCol)
-					.addMergedRegion();
+				parent.matchingRegion(firstRow, lastRow, firstCol, lastCol)
+					.mergeRegion()
+					.setCellValue(cell.getValue());
 			}
 			maxRow = Math.max(lastRow, maxRow);
 		}
@@ -165,7 +164,7 @@ public class TableBuilder<T> extends SheetBuilderHelper {
 
 	/**
 	 * 当前行指定列创建批注
-	 * @deprecated use {@link SheetBuilder#matchingCell(CellAddress)} instead.
+	 * @deprecated removed in 0.1.0, use {@link SheetBuilder#matchingCell(CellAddress)} instead.
 	 */
 	@Deprecated
 	public TableBuilder<T> createCellComment(String comment, String author, int col1, int row2, int col2) {
@@ -196,8 +195,8 @@ public class TableBuilder<T> extends SheetBuilderHelper {
 		thisRow = parent.sheet.getLastRowNum() + 1;
 		lastRow = thisRow;
 		lastCol = properties.size() - 1;
-		List<Column> headers = resolveHeaders(null, type);
-		for (Column header : headers) {
+		List<Header> headers = resolveHeaders(null, type);
+		for (Header header : headers) {
 			createHeader(header);
 		}
 		return this;
@@ -227,15 +226,15 @@ public class TableBuilder<T> extends SheetBuilderHelper {
 	/**
 	 * 创建表头
 	 */
-	private List<Column> resolveHeaders(Column column, Class<?> type) {
-		List<Column> headers = new ArrayList<>();
+	private List<Header> resolveHeaders(Header parent, Class<?> type) {
+		List<Header> headers = new ArrayList<>();
 		for (Field field : getFields(type)) {
 			Class<?> fieldType = field.getType();
-			String property = column == null ? field.getName() : column.getName() + "." + field.getName();
+			String property = parent == null ? field.getName() : parent.getName() + "." + field.getName();
 			if (!IterableUtils.matchesAny(properties, it -> it.equals(property) || it.startsWith(property + "."))) {
 				continue;
 			}
-			Column header = new Column(field);
+			Header header = new Header(field);
 			header.setName(property);
 			// 根据嵌套属性中的点来获取开始行位置，每次递归都会创建一行
 			header.setFirstRow(StringUtils.countMatches(property, ".") + thisRow);

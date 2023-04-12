@@ -1,11 +1,15 @@
 package com.jeeapp.excel.builder;
 
+import org.apache.poi.common.usermodel.HyperlinkType;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.ss.usermodel.Comment;
+import org.apache.poi.ss.usermodel.Hyperlink;
+import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.ss.util.CellAddress;
 import org.apache.poi.ss.util.SheetUtil;
+import org.apache.poi.xssf.usermodel.XSSFFont;
 
 /**
  * @author Justice
@@ -47,6 +51,26 @@ public class CellBuilder extends CreationBuilder<CellBuilder> {
 	public CellBuilder setActiveCell() {
 		sheet.setActiveCell(cellAddress);
 		return self();
+	}
+
+	/**
+	 * 设置超链接
+	 */
+	public SheetBuilder createHyperlink(HyperlinkType hyperlinkType, String address) {
+		return createHyperlink(hyperlinkType, address, address);
+	}
+
+	/**
+	 * 设置超链接
+	 */
+	public SheetBuilder createHyperlink(HyperlinkType hyperlinkType, String address, String label) {
+		Hyperlink hyperlink = creationHelper.createHyperlink(hyperlinkType);
+		hyperlink.setAddress(address);
+		hyperlink.setLabel(label);
+		return parent.matchingCell(cellAddress.getRow(), cellAddress.getColumn())
+			.setFontColor(IndexedColors.BLUE.index)
+			.setUnderline(XSSFFont.U_SINGLE)
+			.setCellValue(hyperlink);
 	}
 
 	/**
