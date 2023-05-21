@@ -16,6 +16,6 @@ See the [中文文档](https://github.com/yyfcode/fastexcel/blob/master/README-z
 <dependency>
     <groupId>com.jeeapp</groupId>
     <artifactId>fastexcel</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.3</version>
 </dependency>
 ```

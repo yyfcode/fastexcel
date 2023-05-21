@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.jeeapp</groupId>
     <artifactId>fastexcel</artifactId>
-    <version>0.0.3-SNAPSHOT</version>
+    <version>0.0.3</version>
     <packaging>jar</packaging>
     <name>Fast Excel</name>
     <description>Fast Excel</description>
@@ -34,16 +34,14 @@
     </scm>
 
     <distributionManagement>
-        <repository>
-            <id>dxiaor</id>
-            <name>Dingapp Releases Repository</name>
-            <url>https://maven.dxiaor.com/repository/maven-releases/</url>
-        </repository>
         <snapshotRepository>
-            <id>dxiaor</id>
-            <name>Dingapp Snapshots Repository</name>
-            <url>https://maven.dxiaor.com/repository/maven-snapshots/</url>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
     </distributionManagement>
 
     <properties>
