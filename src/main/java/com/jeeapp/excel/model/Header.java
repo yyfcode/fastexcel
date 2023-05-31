@@ -50,7 +50,11 @@ public class Header extends Column {
 	public Header(Field field) {
 		super(field);
 		// 表头标题
-		this.setValue(StringUtils.capitalize(StringUtils.join(SPLIT_CAMEL_CASE.split(field.getName()), " ")));
+		if (StringUtils.isBlank(property.name())) {
+			this.setValue(StringUtils.capitalize(StringUtils.join(SPLIT_CAMEL_CASE.split(field.getName()), " ")));
+		} else {
+			this.setValue(property.name());
+		}
 		// 表头样式
 		ExcelProperty.Header header = property.header();
 		this.setBorder(header.border());
