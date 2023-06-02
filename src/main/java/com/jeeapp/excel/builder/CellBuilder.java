@@ -66,7 +66,7 @@ public class CellBuilder extends CreationBuilder<CellBuilder> {
 	}
 
 	/**
-	 * 活动单元格
+	 * 设置活动单元格的位置
 	 */
 	public CellBuilder setActiveCell() {
 		parent.sheet.setActiveCell(cellAddress);
@@ -74,21 +74,22 @@ public class CellBuilder extends CreationBuilder<CellBuilder> {
 	}
 
 	/**
-	 * 设置单元格值
+	 * 给单元格设置值
 	 */
 	public SheetBuilder setCellValue(Object value) {
 		return super.addCellStyle().createCell(cellAddress, value);
 	}
 
 	/**
-	 * 设置空单元
+	 * 从单元格中删除公式和值，并将其类型设置为CellType.BLANK 。保留批注和超链接。
+	 * 虽然setCellType(CellType)存在，但它是setCellType(CellType.BLANK)的别名。
 	 */
 	public SheetBuilder setBlank() {
 		return super.addCellStyle().createCell(cellAddress);
 	}
 
 	/**
-	 * 设置样式
+	 * 给单元格设置样式
 	 */
 	public SheetBuilder setCellStyle() {
 		SheetBuilder parent = super.addCellStyle();

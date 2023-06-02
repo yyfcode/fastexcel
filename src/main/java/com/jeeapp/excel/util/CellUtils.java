@@ -326,7 +326,7 @@ public class CellUtils {
 		}
 	}
 
-	public static Byte getByte(Map<String, Object> properties, String name) {
+	private static Byte getByte(Map<String, Object> properties, String name) {
 		Object value = properties.get(name);
 		if (value instanceof Byte) {
 			return (Byte) value;
@@ -334,7 +334,7 @@ public class CellUtils {
 		return 0;
 	}
 
-	public static String getString(Map<String, Object> properties, String name) {
+	private static String getString(Map<String, Object> properties, String name) {
 		Object value = properties.get(name);
 		if (value instanceof String) {
 			return String.valueOf(value);
@@ -342,7 +342,7 @@ public class CellUtils {
 		return "Arial";
 	}
 
-	public static boolean getBoolean(Map<String, Object> properties, String name) {
+	private static boolean getBoolean(Map<String, Object> properties, String name) {
 		Object value = properties.get(name);
 		if (value instanceof Boolean) {
 			return (Boolean) value;
@@ -350,7 +350,7 @@ public class CellUtils {
 		return false;
 	}
 
-	public static short getShort(Map<String, Object> properties, String name) {
+	private static short getShort(Map<String, Object> properties, String name) {
 		Object value = properties.get(name);
 		if (value instanceof Number) {
 			return ((Number) value).shortValue();
@@ -358,7 +358,7 @@ public class CellUtils {
 		return 0;
 	}
 
-	public static int getInt(Map<String, Object> properties, String name) {
+	private static int getInt(Map<String, Object> properties, String name) {
 		Object value = properties.get(name);
 		if (value instanceof Number) {
 			return ((Number) value).intValue();
@@ -366,7 +366,7 @@ public class CellUtils {
 		return 0;
 	}
 
-	public static FillPatternType getFillPattern(Map<String, Object> properties, String name) {
+	private static FillPatternType getFillPattern(Map<String, Object> properties, String name) {
 		Object value = properties.get(name);
 		FillPatternType pattern;
 		if (value instanceof FillPatternType) {
@@ -384,7 +384,7 @@ public class CellUtils {
 		return pattern;
 	}
 
-	public static BorderStyle getBorderStyle(Map<String, Object> properties, String name) {
+	private static BorderStyle getBorderStyle(Map<String, Object> properties, String name) {
 		Object value = properties.get(name);
 		BorderStyle border;
 		if (value instanceof BorderStyle) {
@@ -402,7 +402,7 @@ public class CellUtils {
 		return border;
 	}
 
-	public static HorizontalAlignment getHorizontalAlignment(Map<String, Object> properties, String name) {
+	private static HorizontalAlignment getHorizontalAlignment(Map<String, Object> properties, String name) {
 		Object value = properties.get(name);
 		HorizontalAlignment align;
 		if (value instanceof HorizontalAlignment) {
@@ -420,7 +420,7 @@ public class CellUtils {
 		return align;
 	}
 
-	public static VerticalAlignment getVerticalAlignment(Map<String, Object> properties, String name) {
+	private static VerticalAlignment getVerticalAlignment(Map<String, Object> properties, String name) {
 		Object value = properties.get(name);
 		VerticalAlignment align;
 		if (value instanceof VerticalAlignment) {

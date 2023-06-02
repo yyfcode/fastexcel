@@ -20,7 +20,7 @@ public class WorkbookBuilder extends CellBuilderHelper<WorkbookBuilder> {
 	}
 
 	/**
-	 * 默认样式工作表
+	 * 设置默认样式Excel工作簿
 	 */
 	public static WorkbookBuilder builder() {
 		return new WorkbookBuilder(new SXSSFWorkbook())
@@ -34,7 +34,7 @@ public class WorkbookBuilder extends CellBuilderHelper<WorkbookBuilder> {
 	}
 
 	/**
-	 * 工作表
+	 * 自定义Excel工作簿
 	 */
 	public static WorkbookBuilder builder(Workbook workbook) {
 		Assert.notNull(workbook, "workbook must not be null!");

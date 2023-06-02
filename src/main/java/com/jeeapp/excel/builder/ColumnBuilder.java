@@ -54,7 +54,7 @@ public class ColumnBuilder extends CellStyleBuilder<ColumnBuilder, SheetBuilder>
 	}
 
 	/**
-	 * 设置样式
+	 * 给匹配列设置样式
 	 */
 	public SheetBuilder setCellStyle() {
 		SheetBuilder parent = super.addCellStyle();

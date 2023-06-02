@@ -184,7 +184,7 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 	}
 
 	/**
-	 * init sheet
+	 * 初始工作表
 	 */
 	protected Sheet initSheet(Sheet sheet) {
 		if (properties.width != null) {
@@ -197,7 +197,7 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 	}
 
 	/**
-	 * init row
+	 * 初始行
 	 */
 	protected Row initRow(Row row) {
 		if (properties.height != null) {

@@ -41,7 +41,7 @@ public class RowBuilder extends CellStyleBuilder<RowBuilder, SheetBuilder> {
 	}
 
 	/**
-	 * 设置样式
+	 * 给匹配行设置样式
 	 */
 	public SheetBuilder setCellStyle() {
 		SheetBuilder parent = super.addCellStyle();

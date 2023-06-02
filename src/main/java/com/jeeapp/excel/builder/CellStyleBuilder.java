@@ -387,7 +387,7 @@ public class CellStyleBuilder<B extends CellStyleBuilder<B, P>, P extends CellBu
 	}
 
 	/**
-	 * 添加样式
+	 * 在单元格创建之前添加样式
 	 */
 	public P addCellStyle() {
 		if (properties.isEmpty()) {

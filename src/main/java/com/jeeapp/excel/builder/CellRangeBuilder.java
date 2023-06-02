@@ -37,7 +37,7 @@ public class CellRangeBuilder extends CreationBuilder<CellRangeBuilder> {
 	}
 
 	/**
-	 * 设置样式
+	 * 给匹配区域内的单元格设置样式
 	 */
 	public SheetBuilder setCellStyle() {
 		SheetBuilder parent = super.addCellStyle();
