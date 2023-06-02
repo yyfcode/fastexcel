@@ -82,7 +82,6 @@ public class TableBuilder<T> extends SheetBuilderHelper {
 		} else {
 			lastRow = this.lastRow;
 		}
-
 		// column style
 		parent.matchingColumn(firstCol)
 			.setColumnWidth(header.getWidth())
@@ -91,7 +90,7 @@ public class TableBuilder<T> extends SheetBuilderHelper {
 			.addCellStyle();
 		// column validation
 		if (header.getValidationType() > ValidationType.ANY && header.getValidationType() <= ValidationType.FORMULA) {
-			parent.matchingRegion(this.lastRow + 1, parent.maxRows - this.lastRow - 1, lastCol, lastCol)
+			parent.matchingRegion(this.lastRow + 1, parent.helper.getMaxRows() - this.lastRow - 1, lastCol, lastCol)
 				.createConstraint(header.getValidationType(),
 					header.getOperatorType(),
 					header.getFirstFormula(),
@@ -175,11 +174,12 @@ public class TableBuilder<T> extends SheetBuilderHelper {
 	/**
 	 * 对象行
 	 */
-	public TableBuilder<T> createRows(Collection<T> beans) {
-		if (CollectionUtils.isNotEmpty(beans)) {
-			for (T bean : beans) {
-				createRow(bean);
-			}
+	public TableBuilder<T> createRows(Iterable<T> beans) {
+		if (IterableUtils.isEmpty(beans)) {
+			return this;
+		}
+		for (T bean : beans) {
+			createRow(bean);
 		}
 		return this;
 	}
@@ -268,7 +268,6 @@ public class TableBuilder<T> extends SheetBuilderHelper {
 		List<String> nestedPropertyPaths = new ArrayList<>();
 		Map<String, Integer> nestedPropertyPathRowCount = new HashMap<>();
 		List<Cell> cells = resolveCells(target, StringUtils.EMPTY, nestedPropertyPaths, nestedPropertyPathRowCount);
-
 		// 计算属性值行距
 		Map<String, RowSpan> propertyPathRowSpans = new HashMap<>();
 		for (String propertyPath : nestedPropertyPaths) {
@@ -289,7 +288,6 @@ public class TableBuilder<T> extends SheetBuilderHelper {
 			propertyPathRowSpans.put(propertyPath, new RowSpan(firstRow, lastRow));
 			this.lastRow = Math.max(this.lastRow, lastRow + thisRow);
 		}
-
 		// 设置单元格行距
 		for (Cell cell : cells) {
 			if (cell.getName().contains(".")) {
@@ -343,7 +341,7 @@ public class TableBuilder<T> extends SheetBuilderHelper {
 				nestedPropertyPaths.add(StringUtils.substringBeforeLast(propertyPath, "."));
 				cells.addAll(resolveCells(propertyValue, propertyPath, nestedPropertyPaths, nestedPropertyPathRowCount));
 			} else if (column > -1) {
-				Cell cell = new Cell(field);
+				Cell cell = new Cell();
 				cell.setName(propertyName);
 				cell.setValue(propertyValue);
 				cell.setFirstCol(column);

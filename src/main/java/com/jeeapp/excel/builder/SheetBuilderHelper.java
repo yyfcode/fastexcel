@@ -2,9 +2,6 @@ package com.jeeapp.excel.builder;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CreationHelper;
-import org.apache.poi.ss.usermodel.DataValidationHelper;
-import org.apache.poi.ss.usermodel.Drawing;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellAddress;
@@ -19,23 +16,11 @@ abstract class SheetBuilderHelper extends CellBuilderHelper<SheetBuilder> {
 
 	protected final Sheet sheet;
 
-	protected final int maxRows;
-
-	protected final int maxColumns;
-
-	protected final Drawing<?> drawing;
-
-	protected final CreationHelper creationHelper;
-
-	protected final DataValidationHelper dataValidationHelper;
+	protected final SheetHelper helper;
 
 	protected SheetBuilderHelper(CellBuilderHelper<?> parent, Sheet sheet) {
 		super(parent);
-		this.drawing = sheet.createDrawingPatriarch();
-		this.creationHelper = workbook.getCreationHelper();
-		this.dataValidationHelper = sheet.getDataValidationHelper();
-		this.maxRows = workbook.getSpreadsheetVersion().getMaxRows();
-		this.maxColumns = workbook.getSpreadsheetVersion().getMaxColumns();
+		this.helper = new SheetHelper(sheet);
 		this.sheet = initSheet(sheet);
 	}
 

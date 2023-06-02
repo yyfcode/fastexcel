@@ -2,6 +2,7 @@ package com.jeeapp.excel.builder;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
@@ -117,8 +118,8 @@ abstract class CellBuilderHelper<B extends CellBuilderHelper<B>> {
 			}
 			setRowStyle(sheet, row);
 		}
-		for (CellRangeAddress region : properties.mergedRegions.getCellRangeAddresses()) {
-			sheet.addMergedRegion(region);
+		List<CellRangeAddress> regions = sheet.getMergedRegions();
+		for (CellRangeAddress region : regions) {
 			setRegionStyle(sheet, region);
 		}
 	}

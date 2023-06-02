@@ -25,8 +25,7 @@ public class CellRangeBuilder extends CreationBuilder<CellRangeBuilder> {
 	 */
 	public SheetBuilder addMergedRegion() {
 		SheetBuilder parent = super.addCellStyle();
-		sheet.addMergedRegion(region);
-		parent.setRegionStyle(sheet, region);
+		parent.sheet.addMergedRegion(region);
 		return parent;
 	}
 
@@ -43,7 +42,7 @@ public class CellRangeBuilder extends CreationBuilder<CellRangeBuilder> {
 	public SheetBuilder setCellStyle() {
 		SheetBuilder parent = super.addCellStyle();
 		for (CellAddress cellAddress : region) {
-			Cell cell = SheetUtil.getCellWithMerges(sheet, cellAddress.getRow(), cellAddress.getColumn());
+			Cell cell = SheetUtil.getCellWithMerges(parent.sheet, cellAddress.getRow(), cellAddress.getColumn());
 			if (cell != null) {
 				parent.setCellStyle(cell);
 			}
@@ -57,7 +56,7 @@ public class CellRangeBuilder extends CreationBuilder<CellRangeBuilder> {
 	public SheetBuilder fillUndefinedCells() {
 		SheetBuilder parent = super.addCellStyle();
 		for (CellAddress cellAddress : region) {
-			Cell cell = SheetUtil.getCellWithMerges(sheet, cellAddress.getRow(), cellAddress.getColumn());
+			Cell cell = SheetUtil.getCellWithMerges(parent.sheet, cellAddress.getRow(), cellAddress.getColumn());
 			if (cell == null) {
 				parent.createCell(cellAddress);
 			}

@@ -101,7 +101,7 @@ public class CellUtils {
 	private static CellStyle getStyle(CellStyle originalStyle, Workbook workbook, Map<String, Object> properties) {
 		CellStyle newStyle = null;
 		Map<String, Object> values = getFormatProperties(originalStyle);
-		properties.put(CellUtil.FONT, getFont(workbook, properties));
+		properties.put(CellUtil.FONT, getFont(workbook, properties).getIndex());
 		putStyleProperties(properties, values);
 
 		// index seems like what index the cellstyle is in the list of styles for a workbook.
@@ -183,7 +183,7 @@ public class CellUtils {
 		sheet.setDefaultColumnStyle(column, getStyle(columnStyle, workbook, properties));
 	}
 
-	private static Integer getFont(Workbook workbook, Map<String, Object> properties) {
+	public static Font getFont(Workbook workbook, Map<String, Object> properties) {
 		Font originalFont, newFont = null;
 		if (workbook.getNumberOfFonts() > 0) {
 			originalFont = workbook.getFontAt(0);
@@ -207,7 +207,7 @@ public class CellUtils {
 			newFont = workbook.createFont();
 			setFontProperties(newFont, values);
 		}
-		return newFont.getIndex();
+		return newFont;
 	}
 
 	private static Map<String, Object> getFormatProperties(CellStyle style) {

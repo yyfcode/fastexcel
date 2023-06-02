@@ -1,12 +1,11 @@
 package com.jeeapp.excel.annotation;
 
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.DataValidation.ErrorStyle;
 import org.apache.poi.ss.usermodel.DataValidationConstraint.OperatorType;
@@ -56,6 +55,7 @@ public @interface ExcelProperty {
 	 * 数据验证
 	 * @see org.apache.poi.ss.usermodel.DataValidation
 	 */
+	@Deprecated
 	Validation validation() default @Validation;
 
 	/**
@@ -139,6 +139,7 @@ public @interface ExcelProperty {
 	/**
 	 * @author Justice
 	 */
+	@Deprecated
 	@Target({})
 	@Retention(RUNTIME)
 	@interface Validation {

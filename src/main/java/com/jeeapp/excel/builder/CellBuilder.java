@@ -33,24 +33,16 @@ public class CellBuilder extends CreationBuilder<CellBuilder> {
 	}
 
 	public CellBuilder createCellComment(String text, String author, int width, int height) {
-		ClientAnchor clientAnchor = creationHelper.createClientAnchor();
-		RichTextString string = creationHelper.createRichTextString(text);
+		ClientAnchor clientAnchor = parent.helper.createClientAnchor();
+		RichTextString string = parent.helper.createRichTextString(text);
 		clientAnchor.setRow1(cellAddress.getRow());
 		clientAnchor.setCol1(cellAddress.getColumn());
 		clientAnchor.setRow2(cellAddress.getRow() + width);
 		clientAnchor.setCol2(cellAddress.getColumn() + height);
-		Comment cellComment = drawing.createCellComment(clientAnchor);
+		Comment cellComment = parent.helper.createCellComment(clientAnchor);
 		cellComment.setString(string);
 		cellComment.setAuthor(author);
 		return this;
-	}
-
-	/**
-	 * 活动单元格
-	 */
-	public CellBuilder setActiveCell() {
-		sheet.setActiveCell(cellAddress);
-		return self();
 	}
 
 	/**
@@ -64,13 +56,21 @@ public class CellBuilder extends CreationBuilder<CellBuilder> {
 	 * 设置超链接
 	 */
 	public SheetBuilder createHyperlink(HyperlinkType hyperlinkType, String address, String label) {
-		Hyperlink hyperlink = creationHelper.createHyperlink(hyperlinkType);
+		Hyperlink hyperlink = parent.helper.createHyperlink(hyperlinkType);
 		hyperlink.setAddress(address);
 		hyperlink.setLabel(label);
 		return parent.matchingCell(cellAddress.getRow(), cellAddress.getColumn())
 			.setFontColor(IndexedColors.BLUE.index)
 			.setUnderline(XSSFFont.U_SINGLE)
 			.setCellValue(hyperlink);
+	}
+
+	/**
+	 * 活动单元格
+	 */
+	public CellBuilder setActiveCell() {
+		parent.sheet.setActiveCell(cellAddress);
+		return self();
 	}
 
 	/**
@@ -92,7 +92,7 @@ public class CellBuilder extends CreationBuilder<CellBuilder> {
 	 */
 	public SheetBuilder setCellStyle() {
 		SheetBuilder parent = super.addCellStyle();
-		Cell cell = SheetUtil.getCellWithMerges(sheet, cellAddress.getRow(), cellAddress.getColumn());
+		Cell cell = SheetUtil.getCellWithMerges(parent.sheet, cellAddress.getRow(), cellAddress.getColumn());
 		if (cell != null) {
 			parent.setCellStyle(cell);
 		}
