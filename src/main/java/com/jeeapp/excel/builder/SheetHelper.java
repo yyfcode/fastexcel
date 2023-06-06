@@ -1,11 +1,6 @@
 package com.jeeapp.excel.builder;
 
-/**
- * @author Justice
- */
-
 import java.util.Map;
-
 import org.apache.poi.common.usermodel.HyperlinkType;
 import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.usermodel.ClientAnchor;
