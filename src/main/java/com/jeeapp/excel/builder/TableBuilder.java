@@ -230,14 +230,14 @@ public class TableBuilder<T> extends SheetBuilderHelper {
 		List<Header> headers = new ArrayList<>();
 		for (Field field : getFields(type)) {
 			Class<?> fieldType = field.getType();
-			String property = parent == null ? field.getName() : parent.getName() + "." + field.getName();
-			if (!IterableUtils.matchesAny(properties, it -> it.equals(property) || it.startsWith(property + "."))) {
+			String name = parent == null ? field.getName() : parent.getName() + "." + field.getName();
+			if (!IterableUtils.matchesAny(properties, it -> it.equals(name) || it.startsWith(name + "."))) {
 				continue;
 			}
 			Header header = new Header(field);
-			header.setName(property);
+			header.setName(name);
 			// 根据嵌套属性中的点来获取开始行位置，每次递归都会创建一行
-			header.setFirstRow(StringUtils.countMatches(property, ".") + thisRow);
+			header.setFirstRow(StringUtils.countMatches(name, ".") + thisRow);
 			// 更新表头最后一行的位置，用于表头合并
 			lastRow = Math.max(header.getFirstRow(), lastRow);
 			// 更新表头列的位置，每个属性对应一列
@@ -310,40 +310,41 @@ public class TableBuilder<T> extends SheetBuilderHelper {
 		List<Cell> cells = new ArrayList<>();
 		BeanWrapper beanWrapper = PropertyAccessorFactory.forBeanPropertyAccess(target);
 		for (Field field : getFields(beanWrapper.getWrappedClass())) {
-			Class<?> propertyType = field.getType();
-			String propertyName = parentPropertyPath + field.getName();
-			String property = RegExUtils.removeAll(propertyName, "\\[(.*?)]");
+			Class<?> fieldType = field.getType();
+			String fieldName = field.getName();
+			String name = parentPropertyPath + fieldName;
+			String property = RegExUtils.removeAll(name, "\\[(.*?)]");
 			int column = properties.indexOf(property);
 			if (!IterableUtils.matchesAny(properties, it -> it.equals(property) || it.startsWith(property + "."))) {
 				continue;
 			}
-			Object propertyValue = beanWrapper.getPropertyValue(field.getName());
-			if (propertyType.isArray() && propertyValue != null) {
-				Object[] values = ObjectUtils.toObjectArray(propertyValue);
+			Object value = beanWrapper.getPropertyValue(fieldName);
+			if (fieldType.isArray() && value != null) {
+				Object[] values = ObjectUtils.toObjectArray(value);
 				int length = values.length;
 				calculateNestedPropertyPathRowCount(parentPropertyPath, length, nestedPropertyPathRowCount);
 				for (int i = 0; i < length; i++) {
-					String propertyPath = propertyName + "[" + i + "].";
+					String propertyPath = name + "[" + i + "].";
 					nestedPropertyPaths.add(StringUtils.substringBeforeLast(propertyPath, "."));
 					cells.addAll(resolveCells(values[i], propertyPath, nestedPropertyPaths, nestedPropertyPathRowCount));
 				}
-			} else if (Collection.class.isAssignableFrom(propertyType) && propertyValue != null) {
-				Collection<?> values = (Collection<?>) propertyValue;
+			} else if (Collection.class.isAssignableFrom(fieldType) && value != null) {
+				Collection<?> values = (Collection<?>) value;
 				int size = values.size();
 				calculateNestedPropertyPathRowCount(parentPropertyPath, size, nestedPropertyPathRowCount);
 				for (int i = 0; i < size; i++) {
-					String propertyPath = propertyName + "[" + i + "].";
+					String propertyPath = name + "[" + i + "].";
 					nestedPropertyPaths.add(StringUtils.substringBeforeLast(propertyPath, "."));
 					cells.addAll(resolveCells(values.toArray()[i], propertyPath, nestedPropertyPaths, nestedPropertyPathRowCount));
 				}
-			} else if (!BeanUtils.isSimpleProperty(propertyType) && propertyValue != null) {
-				String propertyPath = propertyName + ".";
+			} else if (!BeanUtils.isSimpleProperty(fieldType) && value != null) {
+				String propertyPath = name + ".";
 				nestedPropertyPaths.add(StringUtils.substringBeforeLast(propertyPath, "."));
-				cells.addAll(resolveCells(propertyValue, propertyPath, nestedPropertyPaths, nestedPropertyPathRowCount));
+				cells.addAll(resolveCells(value, propertyPath, nestedPropertyPaths, nestedPropertyPathRowCount));
 			} else if (column > -1) {
 				Cell cell = new Cell();
-				cell.setName(propertyName);
-				cell.setValue(propertyValue);
+				cell.setName(name);
+				cell.setValue(value);
 				cell.setFirstCol(column);
 				cell.setLastCol(column);
 				cells.add(cell);

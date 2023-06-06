@@ -51,15 +51,20 @@ public class ValidationBuilder<B extends CreationBuilder<B>> {
 	}
 
 	public ValidationBuilder<B> showErrorBox(String errorBoxTitle, String errorBoxText) {
-		showErrorBox(true, errorBoxTitle, errorBoxText);
+		this.showErrorBox = true;
+		this.errorBoxTitle = errorBoxTitle;
+		this.errorBoxText = errorBoxText;
 		return this;
 	}
 
 	public ValidationBuilder<B> showPromptBox(String promptBoxTitle, String promptBoxText) {
-		showPromptBox(true, promptBoxTitle, promptBoxText);
+		this.showPromptBox = true;
+		this.promptBoxTitle = promptBoxTitle;
+		this.promptBoxText = promptBoxText;
 		return this;
 	}
 
+	@Deprecated
 	protected ValidationBuilder<B> showErrorBox(boolean showErrorBox, String errorBoxTitle, String errorBoxText) {
 		this.showErrorBox = showErrorBox;
 		this.errorBoxTitle = errorBoxTitle;
@@ -67,6 +72,7 @@ public class ValidationBuilder<B extends CreationBuilder<B>> {
 		return this;
 	}
 
+	@Deprecated
 	protected ValidationBuilder<B> showPromptBox(boolean showPromptBox, String promptBoxTitle, String promptBoxText) {
 		this.showPromptBox = showPromptBox;
 		this.promptBoxTitle = promptBoxTitle;
