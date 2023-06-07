@@ -49,6 +49,7 @@ public @interface ExcelProperty {
 	/**
 	 * 表头样式
 	 */
+	@Deprecated
 	Header header() default @Header;
 
 	/**
